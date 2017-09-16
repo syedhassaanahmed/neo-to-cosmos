@@ -1,0 +1,13 @@
+{
+    "cosmosDB": {
+        "endpoint": "mycosmosdb.graphs.azure.com",
+        "authKey": "<copy primary key from Azure portal>",
+        "database": "<database name>",
+        "collection": "<collection name>"
+    },
+    "neo4j": {
+        "bolt": "bolt://localhost:7687",
+        "user": "<neo4j user>",
+        "pass": "<neo4j password>"
+    }
+}

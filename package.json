@@ -1,0 +1,27 @@
+{
+  "name": "neo-to-cosmos",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Syed Hassaan Ahmed",
+  "license": "MIT",
+  "dependencies": {
+    "gremlin": "^2.6.0",
+    "neo4j-driver": "^1.4.0",
+    "promise-parallel-throttle": "^3.0.0"
+  },
+  "devDependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-register": "^6.26.0"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ],
+    "sourceMaps": true,
+    "retainLines": true
+  }
+}
