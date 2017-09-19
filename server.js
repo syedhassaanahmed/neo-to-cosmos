@@ -2,8 +2,14 @@ import { createClient } from "gremlin";
 import config from "./config.json";
 import neo4j from "neo4j-driver";
 import * as throttle from "promise-parallel-throttle";
+import url from "url";
+import { DocumentClientWrapper as DocumentClient } from "documentdb-q-promises";
 
-const gremlinClient = createClient(443, config.cosmosDB.endpoint, {
+const graphEndpoint = url
+  .parse(config.cosmosDB.endpoint)
+  .hostname.replace(".documents.azure.com", ".graphs.azure.com");
+
+const gremlinClient = createClient(443, graphEndpoint, {
   session: false,
   ssl: true,
   user: `/dbs/${config.cosmosDB.database}/colls/${config.cosmosDB.collection}`,
@@ -29,14 +35,28 @@ const migrateData = async () => {
 const cleanupCosmosData = async () => {
   const start = process.hrtime();
 
-  await executeGremlin("g.E().drop()");
-  await executeGremlin("g.V().drop()");
+  const documentClient = new DocumentClient(config.cosmosDB.endpoint, {
+    masterKey: config.cosmosDB.authKey
+  });
+
+  const databaseLink = `dbs/${config.cosmosDB.database}`;
+
+  try {
+    await documentClient.deleteDatabaseAsync(databaseLink);
+  } catch (err) {
+    console.log(`Database ${config.cosmosDB.database} does not exist`);
+  }
+
+  await documentClient.createDatabaseAsync({ id: config.cosmosDB.database });
+  await documentClient.createCollectionAsync(databaseLink, {
+    id: config.cosmosDB.collection
+  });
 
   cleanupTime = elapsedSeconds(start);
 };
 
 const executeGremlin = query => {
-  console.log(query);
+  //   console.log(query);
 
   const promise = new Promise((resolve, reject) =>
     gremlinClient.execute(
@@ -49,13 +69,13 @@ const executeGremlin = query => {
 };
 
 const createVertexes = async () => {
+  console.log("Create Vertexes");
   const start = process.hrtime();
   let index = 0;
   let neoVertexes = await readNeoVertexes(index);
   while (neoVertexes.length > 0) {
-    neoVertexes.map(v => console.log(v))  
     const neopromises = neoVertexes.map(v => () =>
-        executeGremlin(toGremlinVertex(v))
+      executeGremlin(toGremlinVertex(v))
     );
 
     await throttle.all(neopromises, {
@@ -64,17 +84,18 @@ const createVertexes = async () => {
     });
     index += 1;
     const nextIndex = index * pageSize;
-    neoVertexes = await readNeoVertexes(nextIndex); 
+    console.log(nextIndex);
+    neoVertexes = await readNeoVertexes(nextIndex);
   }
-   vertexesTime = elapsedSeconds(start);
- };
+  vertexesTime = elapsedSeconds(start);
+};
 
 const elapsedSeconds = start => {
   const end = process.hrtime(start);
   return (end[0] * 1e9 + end[1]) / 1e9;
 };
 
-const readNeoVertexes = async (index) => {
+const readNeoVertexes = async index => {
   let driver = await createNeo4jDriver();
   let session = driver.session();
   let vertexQuery = "MATCH (n) RETURN n skip " + index + " limit " + pageSize;
@@ -105,24 +126,35 @@ const toGremlinVertex = neoVertex => {
 };
 
 const createEdges = async () => {
+  console.log("Create Edges");
   const start = process.hrtime();
 
-  const neoEdges = await readNeoEdges();
-  const promises = neoEdges.map(e => () => executeGremlin(toGremlinEdge(e)));
-
-  await throttle.all(promises, {
-    maxInProgress: 2, // we get 'Request rate too large' on a higher value
-    failFast: true
-  });
-
+  let index = 0;
+  let neoEdges = await readNeoEdges(index);
+  while (neoEdges.length > 0) {
+    const neopromises = neoEdges.map(v => () =>
+      executeGremlin(toGremlinEdge(v))
+    );
+    await throttle.all(neopromises, {
+        maxInProgress: 2,
+        failFast: true
+    });
+    index += 1;
+    const nextIndex = index * pageSize;
+    console.log(nextIndex);
+    neoEdges = await readNeoEdges(nextIndex);
+  }
   edgesTime = elapsedSeconds(start);
 };
 
-const readNeoEdges = async () => {
+const readNeoEdges = async (index) => {
   let driver = await createNeo4jDriver();
   let session = driver.session();
 
-  const edges = await session.run("MATCH (a)-[r]->(b) RETURN r");
+  let edgeQuery =
+    "MATCH (a)-[r]->(b) RETURN r SKIP " + index + " LIMIT " + pageSize;
+
+  const edges = await session.run(edgeQuery);
 
   session.close();
   driver.close();
