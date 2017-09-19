@@ -1,15 +1,12 @@
 # neo-to-cosmos
-This project is an x-plat port of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos). To get started please follow the instructions in Brian's repo with these notable exceptions in **Final steps**.
+This project is an x-plat port of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos). To get started please follow the instructions in Brian's repo, except use `config.json` (schema below).
 
-- App configuration is read from `config.json` with below schema.
-- `Database` and `Collection` must be created prior to running this app.
-- `endpoint` field must not contain `https` or `443` and it should be `*.graphs.azure.com` instead of `*.documents.azure.com`.
-- `npm start` and watch your data being copied!
+`npm start` and watch your data being copied!
 
 ```json
 {
     "cosmosDB": {
-        "endpoint": "mycosmosdb.graphs.azure.com",
+        "endpoint": "https://mycosmosdb.documents.azure.com:443/",
         "authKey": "<copy primary key from Azure portal>",
         "database": "<database name>",
         "collection": "<collection name>"

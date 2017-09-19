@@ -2,8 +2,13 @@ import { createClient } from 'gremlin'
 import config from './config.json'
 import neo4j from 'neo4j-driver'
 import * as throttle from 'promise-parallel-throttle'
+import url from 'url'
+import {DocumentClientWrapper as DocumentClient} from 'documentdb-q-promises'
 
-const gremlinClient = createClient(443, config.cosmosDB.endpoint,
+const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com', 
+    '.graphs.azure.com')
+
+const gremlinClient = createClient(443, graphEndpoint,
     {
         'session': false,
         'ssl': true,
@@ -29,8 +34,19 @@ const migrateData = async () => {
 const cleanupCosmosData = async () => {
     const start = process.hrtime()
 
-    await executeGremlin('g.E().drop()')
-    await executeGremlin('g.V().drop()')
+    const documentClient = new DocumentClient(config.cosmosDB.endpoint, 
+        {masterKey: config.cosmosDB.authKey})
+
+    const databaseLink = `dbs/${config.cosmosDB.database}`
+
+    try {
+        await documentClient.deleteDatabaseAsync(databaseLink)
+    } catch (err) {
+        console.log(`Database ${config.cosmosDB.database} does not exist`)
+    }
+
+    await documentClient.createDatabaseAsync({ id: config.cosmosDB.database })
+    await documentClient.createCollectionAsync(databaseLink, { id: config.cosmosDB.collection })
 
     cleanupTime = elapsedSeconds(start)
 }
@@ -57,7 +73,7 @@ const createVertexes = async () => {
         failFast: true
     })
 
-    vertexesTime = elapsedSeconds(start)    
+    vertexesTime = elapsedSeconds(start)
 }
 
 const elapsedSeconds = start => {

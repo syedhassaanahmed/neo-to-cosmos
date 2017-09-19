@@ -1,13 +1,13 @@
 {
     "cosmosDB": {
-        "endpoint": "mycosmosdb.graphs.azure.com",
-        "authKey": "<copy primary key from Azure portal>",
-        "database": "<database name>",
-        "collection": "<collection name>"
+        "endpoint": "https://neo2cosmos.documents.azure.com:443/",
+        "authKey": "so44DQGDrxzf9QjhnvzyKa8Bg3Wgn9MeUMNl4qRbLRsEoVimu0titUx6BmdU1VQUUHWGLxXCrCTVSkYaPXoYTQ==",
+        "database": "graphdb",
+        "collection": "Northwind"
     },
     "neo4j": {
         "bolt": "bolt://localhost:7687",
-        "user": "<neo4j user>",
-        "pass": "<neo4j password>"
+        "user": "neo4j",
+        "pass": "Neo4j"
     }
 }

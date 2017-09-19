@@ -8,6 +8,7 @@
   "author": "Syed Hassaan Ahmed",
   "license": "MIT",
   "dependencies": {
+    "documentdb-q-promises": "^1.6.0",
     "gremlin": "^2.6.0",
     "neo4j-driver": "^1.4.0",
     "promise-parallel-throttle": "^3.0.0"
