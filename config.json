@@ -1,13 +1,13 @@
 {
     "cosmosDB": {
         "endpoint": "https://mycosmosdb.documents.azure.com:443/",
-        "authKey": "<cosmos db auth key>",
+        "authKey": "<copy primary key from Azure portal>",
         "database": "<database name>",
         "collection": "<collection name>"
     },
     "neo4j": {
         "bolt": "bolt://localhost:7687",
-        "user": "<neo4j username>",
+        "user": "<neo4j user>",
         "pass": "<neo4j password>"
     }
 }
