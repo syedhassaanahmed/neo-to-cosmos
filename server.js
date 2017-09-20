@@ -3,9 +3,9 @@ import config from './config.json'
 import neo4j from 'neo4j-driver'
 import * as throttle from 'promise-parallel-throttle'
 import url from 'url'
-import {DocumentClientWrapper as DocumentClient} from 'documentdb-q-promises'
+import { DocumentClientWrapper as DocumentClient } from 'documentdb-q-promises'
 
-const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com', 
+const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com',
     '.graphs.azure.com')
 
 const gremlinClient = createClient(443, graphEndpoint,
@@ -17,6 +17,7 @@ const gremlinClient = createClient(443, graphEndpoint,
     })
 
 let cleanupTime, vertexesTime, edgesTime
+const pageSize = 100
 
 const migrateData = async () => {
     const start = process.hrtime()
@@ -34,8 +35,8 @@ const migrateData = async () => {
 const cleanupCosmosData = async () => {
     const start = process.hrtime()
 
-    const documentClient = new DocumentClient(config.cosmosDB.endpoint, 
-        {masterKey: config.cosmosDB.authKey})
+    const documentClient = new DocumentClient(config.cosmosDB.endpoint,
+        { masterKey: config.cosmosDB.authKey })
 
     const databaseLink = `dbs/${config.cosmosDB.database}`
 
@@ -65,13 +66,21 @@ const executeGremlin = query => {
 const createVertexes = async () => {
     const start = process.hrtime()
 
-    const neoVertexes = await readNeoVertexes()
-    const promises = neoVertexes.map(v => () => executeGremlin(toGremlinVertex(v)))
+    let index = 0
+    let neoVertexes = await readNeoVertexes(index)
 
-    await throttle.all(promises, {
-        maxInProgress: 2, // we get 'Request rate too large' on a higher value
-        failFast: true
-    })
+    while (neoVertexes.length > 0) {
+        const neopromises = neoVertexes.map(v => () => executeGremlin(toGremlinVertex(v)))
+
+        await throttle.all(neopromises, {
+            maxInProgress: 2, // we get 'Request rate too large' on a higher value
+            failFast: true
+        })
+
+        const nextIndex = ++index * pageSize
+        console.log(nextIndex)
+        neoVertexes = await readNeoVertexes(nextIndex)
+    }
 
     vertexesTime = elapsedSeconds(start)
 }
@@ -81,11 +90,12 @@ const elapsedSeconds = start => {
     return ((end[0] * 1e9) + end[1]) / 1e9
 }
 
-const readNeoVertexes = async () => {
-    let driver = await createNeo4jDriver()
-    let session = driver.session()
+const readNeoVertexes = async index => {
+    const driver = await createNeo4jDriver()
+    const session = driver.session()
 
-    const vertexes = await session.run('MATCH (n) RETURN n')
+    const vertexQuery = `MATCH (n) RETURN n skip ${index} limit ${pageSize}`
+    const vertexes = await session.run(vertexQuery)
 
     session.close()
     driver.close()
@@ -113,22 +123,32 @@ const toGremlinVertex = neoVertex => {
 const createEdges = async () => {
     const start = process.hrtime()
 
-    const neoEdges = await readNeoEdges()
-    const promises = neoEdges.map(e => () => executeGremlin(toGremlinEdge(e)))
+    let index = 0
+    let neoEdges = await readNeoEdges(index)
 
-    await throttle.all(promises, {
-        maxInProgress: 2, // we get 'Request rate too large' on a higher value
-        failFast: true
-    })
+    while (neoEdges.length > 0) {
+        const neopromises = neoEdges.map(v => () => executeGremlin(toGremlinEdge(v)))
+
+        await throttle.all(neopromises, {
+            maxInProgress: 2,
+            failFast: true
+        })
+
+        const nextIndex = ++index * pageSize
+        console.log(nextIndex)
+        neoEdges = await readNeoEdges(nextIndex)
+    }
 
     edgesTime = elapsedSeconds(start)
 }
 
-const readNeoEdges = async () => {
-    let driver = await createNeo4jDriver()
-    let session = driver.session()
+const readNeoEdges = async (index) => {
+    const driver = await createNeo4jDriver()
+    const session = driver.session()
 
-    const edges = await session.run('MATCH (a)-[r]->(b) RETURN r')
+    const edgeQuery = `MATCH (a)-[r]->(b) RETURN r SKIP ${index} LIMIT ${pageSize}`
+
+    const edges = await session.run(edgeQuery)
 
     session.close()
     driver.close()
