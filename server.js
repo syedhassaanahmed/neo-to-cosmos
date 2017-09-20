@@ -9,9 +9,9 @@ import redis from 'redis'
 import bluebird from 'bluebird'
 bluebird.promisifyAll(redis.RedisClient.prototype)
 
+// Graph client
 const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com',
     '.graphs.azure.com')
-
 const gremlinClient = createClient(443, graphEndpoint,
     {
         'session': false,
@@ -20,31 +20,35 @@ const gremlinClient = createClient(443, graphEndpoint,
         'password': config.cosmosDB.authKey
     })
 
+// DocumentDB client
+const documentClient = new DocumentClient(config.cosmosDB.endpoint,
+    { masterKey: config.cosmosDB.authKey })
+const databaseLink = `dbs/${config.cosmosDB.database}`
+
+// Redis client
 const redisClient = redis.createClient({url: config.redisUrl})
 
-let cleanupTime, vertexesTime, edgesTime
+let vertexesTime, edgesTime
 const pageSize = 100
 
 const migrateData = async () => {
     const start = process.hrtime()
 
-    await cleanupCosmosData()
+    if (process.argv[2] === 'restart') {
+        await startFresh()
+    }
+
+    await createCosmosCollectionIfNeeded()
     await createVertexes()
     await createEdges()
 
-    console.log(`Cleanup time: ${cleanupTime} sec`)
     console.log(`Vertexes time: ${vertexesTime} sec`)
     console.log(`Edges time: ${edgesTime} sec`)
     console.log(`Total time: ${elapsedSeconds(start)} sec`)
 }
 
-const cleanupCosmosData = async () => {
-    const start = process.hrtime()
-
-    const documentClient = new DocumentClient(config.cosmosDB.endpoint,
-        { masterKey: config.cosmosDB.authKey })
-
-    const databaseLink = `dbs/${config.cosmosDB.database}`
+const startFresh = async () => {
+    console.log('starting fresh ...')
 
     try {
         await documentClient.deleteDatabaseAsync(databaseLink)
@@ -52,10 +56,23 @@ const cleanupCosmosData = async () => {
         console.log(`Database ${config.cosmosDB.database} does not exist`)
     }
 
-    await documentClient.createDatabaseAsync({ id: config.cosmosDB.database })
-    await documentClient.createCollectionAsync(databaseLink, { id: config.cosmosDB.collection })
+    await redisClient.flushdbAsync()
+}
 
-    cleanupTime = elapsedSeconds(start)
+const createCosmosCollectionIfNeeded = async () => {
+    try {
+        await documentClient.createDatabaseAsync({ id: config.cosmosDB.database })
+    } catch(err) {
+        console.log(`Database ${config.cosmosDB.database} already exists`)
+    }
+
+    try {
+        await documentClient.createCollectionAsync(databaseLink, 
+            { id: config.cosmosDB.collection }, 
+            {offerThroughput: config.cosmosDB.offerThroughput})            
+    } catch (err) {
+        console.log(`Collection ${config.cosmosDB.collection} already exists`)
+    }
 }
 
 const executeGremlin = query => {
@@ -63,7 +80,14 @@ const executeGremlin = query => {
 
     const promise = new Promise((resolve, reject) =>
         gremlinClient.execute(query,
-            (err, results) => (err ? reject(err) : resolve(results)),
+            (err, results) => {
+                if (err && !err.message.includes('Resource with specified id or name already exists')) {
+                    reject(err)
+                    return
+                }
+                
+                resolve(results)
+            },
         ))
 
     return promise
@@ -76,7 +100,7 @@ const createVertexes = async () => {
     let neoVertexes = await readNeoVertexes(index)
 
     while (neoVertexes.length > 0) {
-        const neoPromises = neoVertexes.map(neoVertex => async () => {
+        const promises = neoVertexes.map(neoVertex => async () => {
             const cacheKey = neoVertex.identity.toString()
             
             if (await redisClient.existsAsync(cacheKey)) {
@@ -88,8 +112,8 @@ const createVertexes = async () => {
             }
         })
 
-        await throttle.all(neoPromises, {
-            maxInProgress: 2, // we get 'Request rate too large' on a higher value
+        await throttle.all(promises, {
+            maxInProgress: config.cosmosDB.threadCount, // we get 'Request rate too large' if this value is too large
             failFast: true
         })
 
@@ -143,7 +167,7 @@ const createEdges = async () => {
     let neoEdges = await readNeoEdges(index)
 
     while (neoEdges.length > 0) {
-        const neoPromises = neoEdges.map(neoEdge => async () => {
+        const promises = neoEdges.map(neoEdge => async () => {
             const cacheKey = `${neoEdge.start}_${neoEdge.type}_${neoEdge.end}`
 
             if (await redisClient.existsAsync(cacheKey)) {
@@ -154,8 +178,8 @@ const createEdges = async () => {
             }            
         })
 
-        await throttle.all(neoPromises, {
-            maxInProgress: 2,
+        await throttle.all(promises, {
+            maxInProgress: config.cosmosDB.threadCount, // we get 'Request rate too large' if this value is too large
             failFast: true
         })
 
@@ -185,7 +209,7 @@ const toGremlinEdge = neoEdge => {
     let edge = `g.V('${neoEdge.start}')`
     edge += `.addE('${neoEdge.type}')`
     for (const key of Object.keys(neoEdge.properties)) {
-        const propValue = neoEdge.properties[key].toString().replace(/'/g, '')
+        const propValue = neoEdge.properties[key].toString().replace(/['’`"“”]/g, '')
         edge += `.property('${key}', '${propValue}')`
     }
     edge += `.to(g.V('${neoEdge.end}'))`
