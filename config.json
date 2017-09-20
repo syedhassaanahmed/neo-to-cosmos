@@ -9,5 +9,6 @@
         "bolt": "bolt://localhost:7687",
         "user": "<neo4j user>",
         "pass": "<neo4j password>"
-    }
+    },
+    "redisUrl": "redis://localhost:6379/"
 }

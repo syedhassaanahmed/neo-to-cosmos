@@ -1,8 +1,7 @@
 # neo-to-cosmos
-This project is an x-plat port of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos). To get started please follow the instructions in Brian's repo, except use `config.json` (schema below).
+This project is an x-plat port of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos). To get started please follow the instructions in Brian's repo with the following exceptions. 
 
-`npm start` and watch your data being copied!
-
+- Instead of `app.config`, use `config.json` with this schema;
 ```json
 {
     "cosmosDB": {
@@ -15,6 +14,10 @@ This project is an x-plat port of the great work **Brian Sherwin** has done [in 
         "bolt": "bolt://localhost:7687",
         "user": "<neo4j user>",
         "pass": "<neo4j password>"
-    }
+    },
+    "redisUrl": "redis://localhost:6379/"
 }
 ```
+- Setup a Redis server and specify `redisUrl` in above config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB `RUs`. The fastest way to setup Redis is to use docker. `docker run --name some-redis -d redis`
+
+`npm start` and watch your data being copied!

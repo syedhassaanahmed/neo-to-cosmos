@@ -5,6 +5,10 @@ import * as throttle from 'promise-parallel-throttle'
 import url from 'url'
 import { DocumentClientWrapper as DocumentClient } from 'documentdb-q-promises'
 
+import redis from 'redis'
+import bluebird from 'bluebird'
+bluebird.promisifyAll(redis.RedisClient.prototype)
+
 const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com',
     '.graphs.azure.com')
 
@@ -15,6 +19,8 @@ const gremlinClient = createClient(443, graphEndpoint,
         'user': `/dbs/${config.cosmosDB.database}/colls/${config.cosmosDB.collection}`,
         'password': config.cosmosDB.authKey
     })
+
+const redisClient = redis.createClient({url: config.redisUrl})
 
 let cleanupTime, vertexesTime, edgesTime
 const pageSize = 100
@@ -70,9 +76,19 @@ const createVertexes = async () => {
     let neoVertexes = await readNeoVertexes(index)
 
     while (neoVertexes.length > 0) {
-        const neopromises = neoVertexes.map(v => () => executeGremlin(toGremlinVertex(v)))
+        const neoPromises = neoVertexes.map(neoVertex => async () => {
+            const cacheKey = neoVertex.identity.toString()
+            
+            if (await redisClient.existsAsync(cacheKey)) {
+                console.log(`Skipping vertex ${cacheKey}`)
+            }
+            else {
+                await executeGremlin(toGremlinVertex(neoVertex))
+                await redisClient.setAsync(cacheKey, '')
+            }
+        })
 
-        await throttle.all(neopromises, {
+        await throttle.all(neoPromises, {
             maxInProgress: 2, // we get 'Request rate too large' on a higher value
             failFast: true
         })
@@ -127,9 +143,18 @@ const createEdges = async () => {
     let neoEdges = await readNeoEdges(index)
 
     while (neoEdges.length > 0) {
-        const neopromises = neoEdges.map(v => () => executeGremlin(toGremlinEdge(v)))
+        const neoPromises = neoEdges.map(neoEdge => async () => {
+            const cacheKey = `${neoEdge.start}_${neoEdge.type}_${neoEdge.end}`
 
-        await throttle.all(neopromises, {
+            if (await redisClient.existsAsync(cacheKey)) {
+                console.log(`Skipping edge ${cacheKey}`)
+            } else {
+                await executeGremlin(toGremlinEdge(neoEdge))            
+                await redisClient.setAsync(cacheKey, '')
+            }            
+        })
+
+        await throttle.all(neoPromises, {
             maxInProgress: 2,
             failFast: true
         })
@@ -167,7 +192,12 @@ const toGremlinEdge = neoEdge => {
     return edge
 }
 
-migrateData().then(_ => process.exit()).catch(error => {
+migrateData().then(_ => closeApp()).catch(error => {    
     console.error(error)
-    process.exit()
+    closeApp()
 })
+
+const closeApp = () => {
+    redisClient.quit()
+    process.exit()
+}
