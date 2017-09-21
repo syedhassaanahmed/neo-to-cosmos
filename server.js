@@ -119,10 +119,6 @@ const createVertexes = async () => {
     }
 }
 
-const elapsedSeconds = start => {
-    return ((end[0] * 1e9) + end[1]) / 1e9
-}
-
 const readNeoVertexes = async index => {
     const driver = await createNeo4jDriver()
     const session = driver.session()
