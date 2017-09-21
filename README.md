@@ -12,14 +12,14 @@ To get started please follow the instructions in Brian's repo with the following
         "authKey": "<copy primary key from Azure portal>",
         "database": "<database name>",
         "collection": "<collection name>",
-        "offerThroughput": "400",
-        "threadCount": 3
+        "offerThroughput": "400"        
     },
     "neo4j": {
         "bolt": "bolt://localhost:7687",
         "user": "<neo4j user>",
         "pass": "<neo4j password>"
     },
+    "threadCount": 3,
     "redisUrl": "redis://localhost:6379/"
 }
 ```

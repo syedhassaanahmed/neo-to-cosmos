@@ -113,7 +113,7 @@ const createVertexes = async () => {
         })
 
         await throttle.all(promises, {
-            maxInProgress: config.cosmosDB.threadCount, // we get 'Request rate too large' if this value is too large
+            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too large
             failFast: true
         })
 
@@ -153,7 +153,7 @@ const toGremlinVertex = neoVertex => {
     vertex += `.property('id', '${neoVertex.identity}')`
 
     for (const key of Object.keys(neoVertex.properties)) {
-        const propValue = neoVertex.properties[key].toString().replace(/'/g, '')
+        const propValue = neoVertex.properties[key].toString().replace(/['’`"“”]/g, '')
         vertex += `.property('${key}', '${propValue}')`
     }
 
@@ -179,7 +179,7 @@ const createEdges = async () => {
         })
 
         await throttle.all(promises, {
-            maxInProgress: config.cosmosDB.threadCount, // we get 'Request rate too large' if this value is too large
+            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too large
             failFast: true
         })
 
