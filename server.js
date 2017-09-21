@@ -151,12 +151,12 @@ const toGremlinVertex = neoVertex => {
 
 const getPropValue = property => {
     return property.toString()
-        .replace(/[']/g, '')
-        .replace(/[’]/g, '')
-        .replace(/[`]/g, '')
-        .replace(/["]/g, '')
-        .replace(/[“]/g, '')
-        .replace(/[”]/g, '')
+        .replace(/[']/g, '\\\'')
+        .replace(/[’]/g, '\\\’')
+        .replace(/[`]/g, '%60')
+        .replace(/["]/g, '\\\"')
+        .replace(/[“]/g, '\\\“')
+        .replace(/[”]/g, '\\\”')
 }
 
 const createEdges = async () => {
