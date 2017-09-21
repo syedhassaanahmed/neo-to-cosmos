@@ -146,11 +146,15 @@ const toGremlinVertex = neoVertex => {
     vertex += `.property('id', '${neoVertex.identity}')`
 
     for (const key of Object.keys(neoVertex.properties)) {
-        const propValue = neoVertex.properties[key].toString().replace(/['’`"“”]/g, '')
+        const propValue = getPropValue(neoVertex.properties[key])
         vertex += `.property('${key}', '${propValue}')`
     }
 
     return vertex
+}
+
+const getPropValue = property => {
+    return property.toString().replace(/['’`"“”]/g, '')
 }
 
 const createEdges = async () => {
@@ -200,7 +204,7 @@ const toGremlinEdge = neoEdge => {
     let edge = `g.V('${neoEdge.start}')`
     edge += `.addE('${neoEdge.type}')`
     for (const key of Object.keys(neoEdge.properties)) {
-        const propValue = neoEdge.properties[key].toString().replace(/['’`"“”]/g, '')
+        const propValue = getPropValue(neoEdge.properties[key])
         edge += `.property('${key}', '${propValue}')`
     }
     edge += `.to(g.V('${neoEdge.end}'))`
