@@ -1,16 +1,17 @@
 {
     "cosmosDB": {
-        "endpoint": "https://mycosmosdb.documents.azure.com:443/",
-        "authKey": "<copy primary key from Azure portal>",
-        "database": "<database name>",
-        "collection": "<collection name>",
-        "offerThroughput": "400"        
+        "endpoint": "https://bmsgremlin.documents.azure.com:443/",
+        "authKey": "UlquP8ZpCdglSvjnsxh6o662ZZR6tLVsABTBC0I36pcWPftvzXqFkH1Zb5jsdh1wD0jgP3Z4LX25ivDWvGzzog==",
+        "database": "graphdb",
+        "collection": "LegisGraph",
+        "offerThroughput": "2000"
     },
     "neo4j": {
-        "bolt": "bolt://localhost:7687",
-        "user": "<neo4j user>",
-        "pass": "<neo4j password>"
+        "bolt": "bolt://34.239.248.240:34441",
+        "user": "neo4j",
+        "pass": "suction-washing-malfunction"
     },
-    "threadCount": 3,
+    "threadCount": 6,
+    "logLevel": "notice",
     "redisUrl": "redis://localhost:6379/"
 }
