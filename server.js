@@ -28,12 +28,10 @@ const databaseLink = `dbs/${config.cosmosDB.database}`
 // Redis client
 const redisClient = redis.createClient({url: config.redisUrl})
 
-let vertexesTime, edgesTime
-const pageSize = 100
+const vertexIndexKey = 'vertexIndex'
+const edgeIndexKey = 'edgeIndex'
 
 const migrateData = async () => {
-    const start = process.hrtime()
-
     if (process.argv[2] === 'restart') {
         await startFresh()
     }
@@ -41,10 +39,6 @@ const migrateData = async () => {
     await createCosmosCollectionIfNeeded()
     await createVertexes()
     await createEdges()
-
-    console.log(`Vertexes time: ${vertexesTime} sec`)
-    console.log(`Edges time: ${edgesTime} sec`)
-    console.log(`Total time: ${elapsedSeconds(start)} sec`)
 }
 
 const startFresh = async () => {
@@ -94,9 +88,8 @@ const executeGremlin = query => {
 }
 
 const createVertexes = async () => {
-    const start = process.hrtime()
-
-    let index = 0
+    const vertexIndex = await redisClient.getAsync(vertexIndexKey)
+    let index = vertexIndex ? Number.parseInt(vertexIndex) : 0
     let neoVertexes = await readNeoVertexes(index)
 
     while (neoVertexes.length > 0) {
@@ -108,7 +101,7 @@ const createVertexes = async () => {
             }
             else {
                 await executeGremlin(toGremlinVertex(neoVertex))
-                await redisClient.setAsync(cacheKey, '')
+                redisClient.set(cacheKey, '')
             }
         })
 
@@ -117,16 +110,14 @@ const createVertexes = async () => {
             failFast: true
         })
 
-        const nextIndex = ++index * pageSize
+        redisClient.set(vertexIndexKey, ++index)
+        const nextIndex = index * config.pageSize
         console.log(nextIndex)
         neoVertexes = await readNeoVertexes(nextIndex)
     }
-
-    vertexesTime = elapsedSeconds(start)
 }
 
 const elapsedSeconds = start => {
-    const end = process.hrtime(start)
     return ((end[0] * 1e9) + end[1]) / 1e9
 }
 
@@ -134,7 +125,7 @@ const readNeoVertexes = async index => {
     const driver = await createNeo4jDriver()
     const session = driver.session()
 
-    const vertexQuery = `MATCH (n) RETURN n skip ${index} limit ${pageSize}`
+    const vertexQuery = `MATCH (n) RETURN n ORDER BY ID(n) SKIP ${index} LIMIT ${config.pageSize}`
     const vertexes = await session.run(vertexQuery)
 
     session.close()
@@ -161,9 +152,8 @@ const toGremlinVertex = neoVertex => {
 }
 
 const createEdges = async () => {
-    const start = process.hrtime()
-
-    let index = 0
+    const edgeIndex = await redisClient.getAsync(edgeIndexKey)
+    let index = edgeIndex ? Number.parseInt(edgeIndex) : 0
     let neoEdges = await readNeoEdges(index)
 
     while (neoEdges.length > 0) {
@@ -174,7 +164,7 @@ const createEdges = async () => {
                 console.log(`Skipping edge ${cacheKey}`)
             } else {
                 await executeGremlin(toGremlinEdge(neoEdge))            
-                await redisClient.setAsync(cacheKey, '')
+                redisClient.set(cacheKey, '')
             }            
         })
 
@@ -183,19 +173,18 @@ const createEdges = async () => {
             failFast: true
         })
 
-        const nextIndex = ++index * pageSize
+        redisClient.set(edgeIndexKey, ++index)
+        const nextIndex = index * config.pageSize
         console.log(nextIndex)
         neoEdges = await readNeoEdges(nextIndex)
     }
-
-    edgesTime = elapsedSeconds(start)
 }
 
 const readNeoEdges = async (index) => {
     const driver = await createNeo4jDriver()
     const session = driver.session()
 
-    const edgeQuery = `MATCH (a)-[r]->(b) RETURN r SKIP ${index} LIMIT ${pageSize}`
+    const edgeQuery = `MATCH (a)-[r]->(b) RETURN r ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
 
     const edges = await session.run(edgeQuery)
 
