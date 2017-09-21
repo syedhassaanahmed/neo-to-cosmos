@@ -11,6 +11,8 @@
         "user": "<neo4j user>",
         "pass": "<neo4j password>"
     },
+    "redisUrl": "redis://localhost:6379/",
     "threadCount": 3,
-    "redisUrl": "redis://localhost:6379/"
+    "pageSize": 100,
+    "logLevel": "notice"
 }
