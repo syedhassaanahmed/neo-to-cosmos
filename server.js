@@ -207,7 +207,7 @@ const toGremlinEdge = neoEdge => {
     return edge
 }
 
-migrateData().then(_ => closeApp()).catch(error => {    
+migrateData().then(_ => closeApp()).catch(error => {
     log.error(error)
     closeApp()
 })
