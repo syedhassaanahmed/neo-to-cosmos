@@ -34,25 +34,25 @@ const vertexIndexKey = 'vertexIndex'
 const edgeIndexKey = 'edgeIndex'
 
 const migrateData = async () => {
-    if (process.argv[2] === 'restart') {
-        await startFresh()
-    }
-
+    await handleRestart()
     await createCosmosCollectionIfNeeded()
     await createVertexes()
     await createEdges()
 }
 
-const startFresh = async () => {
-    log.info('starting fresh ...')
+const handleRestart = async () => {
+    if (process.argv[2] === 'restart') {
+        log.info('starting fresh ...')
+        
+        try {
+            const collectionLink = `${databaseLink}/colls/${config.cosmosDB.collection}`
+            await documentClient.deleteCollectionAsync(collectionLink)
+        } catch (err) {
+            log.error(`Collection ${config.cosmosDB.collection} does not exist`)
+        }
 
-    try {
-        await documentClient.deleteDatabaseAsync(databaseLink)
-    } catch (err) {
-        log.error(`Database ${config.cosmosDB.database} does not exist`)
+        await redisClient.flushdbAsync()
     }
-
-    await redisClient.flushdbAsync()
 }
 
 const createCosmosCollectionIfNeeded = async () => {
