@@ -14,5 +14,5 @@
     "redisUrl": "redis://localhost:6379/",
     "threadCount": 3,
     "pageSize": 100,
-    "logLevel": "notice"
+    "logLevel": "info"
 }

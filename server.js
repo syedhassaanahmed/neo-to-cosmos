@@ -72,7 +72,7 @@ const createCosmosCollectionIfNeeded = async () => {
 }
 
 const executeGremlin = query => {
-    log.info(query)
+    log.debug(query)
 
     const promise = new Promise((resolve, reject) =>
         gremlinClient.execute(query,
@@ -114,7 +114,7 @@ const createVertexes = async () => {
 
         redisClient.set(vertexIndexKey, ++index)
         const nextIndex = index * config.pageSize        
-        log.notice(nextIndex)
+        log.info(nextIndex)
         neoVertexes = await readNeoVertexes(nextIndex)
     }
 }
@@ -177,7 +177,7 @@ const createEdges = async () => {
 
         redisClient.set(edgeIndexKey, ++index)
         const nextIndex = index * config.pageSize
-        log.notice(nextIndex)
+        log.info(nextIndex)
         neoEdges = await readNeoEdges(nextIndex)
     }
 }
