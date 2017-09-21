@@ -13,4 +13,4 @@ docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 ## Run the tool
 `npm start` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. If you would like to start fresh use `npm start -- restart`.
 
-> Note: This project is not supported by Microsoft in any way and may become non-functional at any time. This is an independent project and I would love for you to submit pull requests for anything you think could be better. This will not work with the Cosmos DB emulator as this interfaces with the Graph (gremlin) API and this is not currently supported in the emulator at this time.
+> Note: This project is not supported by Microsoft in any way and may become non-functional at any time. This is an independent project and we would love if you submit PRs to improve it. This will not work with Cosmos DB emulator as this interfaces with the Graph (Gremlin) API which is currently not supported in the emulator.
