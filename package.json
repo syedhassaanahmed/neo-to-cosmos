@@ -7,6 +7,10 @@
   },
   "author": "Syed Hassaan Ahmed",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syedhassaanahmed/neo-to-cosmos"
+  },
   "dependencies": {
     "bluebird": "^3.5.0",
     "documentdb-q-promises": "^1.6.0",
