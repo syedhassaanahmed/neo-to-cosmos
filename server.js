@@ -29,25 +29,25 @@ const handleRestart = async () => {
 }
 
 const createVertexes = async () => {
-    const nodeIndex = await cache.get(nodeIndexKey)
-    let index = nodeIndex ? Number.parseInt(nodeIndex) : 0
-    let neoNodes = []
+    const indexString = await cache.get(nodeIndexKey)
+    let index = indexString ? Number.parseInt(indexString) : 0
+    let nodes = []
 
-    do {
+    while (true) {
         log.info('Node: ' + index)
 
-        neoNodes = await neo.getNodes(index)
-        if (neoNodes.length === 0)
+        nodes = await neo.getNodes(index)
+        if (nodes.length === 0)
             break
 
-        const promises = neoNodes.map(neoNode => async () => {
-            const cacheKey = neoNode.identity.toString()
+        const promises = nodes.map(node => async () => {
+            const cacheKey = node.identity.toString()
 
             if (await cache.exists(cacheKey)) {
                 log.info(`Skipping Node ${cacheKey}`)
             }
             else {
-                await cosmos.executeGremlin(toGremlinVertex(neoNode))
+                await cosmos.executeGremlin(toGremlinVertex(node))
                 cache.set(cacheKey, '')
             }
         })
@@ -59,16 +59,15 @@ const createVertexes = async () => {
 
         index += config.pageSize
         cache.set(nodeIndexKey, index)
-
-    } while (true)
+    }
 }
 
-const toGremlinVertex = neoNode => {
-    let vertex = `g.addV('${neoNode.labels[0]}')`
-    vertex += `.property('id', '${neoNode.identity}')`
+const toGremlinVertex = node => {
+    let vertex = `g.addV('${node.labels[0]}')`
+    vertex += `.property('id', '${node.identity}')`
 
-    for (const key of Object.keys(neoNode.properties)) {
-        const propValue = getPropertyValue(neoNode.properties[key])
+    for (const key of Object.keys(node.properties)) {
+        const propValue = getPropertyValue(node.properties[key])
         vertex += `.property('${key}', '${propValue}')`
     }
 
@@ -86,24 +85,24 @@ const getPropertyValue = property => {
 }
 
 const createEdges = async () => {
-    const relationshipIndex = await cache.get(relationshipIndexKey)
-    let index = relationshipIndex ? Number.parseInt(relationshipIndex) : 0
-    let neoRelationships = []
+    const indexString = await cache.get(relationshipIndexKey)
+    let index = indexString ? Number.parseInt(indexString) : 0
+    let relationships = []
 
-    do {
+    while (true) {
         log.info('Relationship: ' + index)
 
-        neoRelationships = await neo.getRelationships(index)
-        if (neoRelationships.length === 0)
+        relationships = await neo.getRelationships(index)
+        if (relationships.length === 0)
             break
 
-        const promises = neoRelationships.map(neoRelationship => async () => {
-            const cacheKey = `${neoRelationship.start}_${neoRelationship.type}_${neoRelationship.end}`
+        const promises = relationships.map(relationship => async () => {
+            const cacheKey = `${relationship.start}_${relationship.type}_${relationship.end}`
 
             if (await cache.exists(cacheKey)) {
                 log.info(`Skipping Relationship ${cacheKey}`)
             } else {
-                await cosmos.executeGremlin(toGremlinEdge(neoRelationship))
+                await cosmos.executeGremlin(toGremlinEdge(relationship))
                 cache.set(cacheKey, '')
             }
         })
@@ -115,18 +114,17 @@ const createEdges = async () => {
 
         index += config.pageSize
         cache.set(relationshipIndexKey, index)
-
-    } while (true)
+    }
 }
 
-const toGremlinEdge = neoRelationship => {
-    let edge = `g.V('${neoRelationship.start}')`
-    edge += `.addE('${neoRelationship.type}')`
-    for (const key of Object.keys(neoRelationship.properties)) {
-        const propValue = getPropertyValue(neoRelationship.properties[key])
+const toGremlinEdge = relationship => {
+    let edge = `g.V('${relationship.start}')`
+    edge += `.addE('${relationship.type}')`
+    for (const key of Object.keys(relationship.properties)) {
+        const propValue = getPropertyValue(relationship.properties[key])
         edge += `.property('${key}', '${propValue}')`
     }
-    edge += `.to(g.V('${neoRelationship.end}'))`
+    edge += `.to(g.V('${relationship.end}'))`
     return edge
 }
 
