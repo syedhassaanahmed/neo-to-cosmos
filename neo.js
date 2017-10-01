@@ -19,7 +19,7 @@ exports.getNodes = async index => {
     return nodes.records.map(record => record.get('n'))
 }
 
-exports.getRelationships = async (index) => {
+exports.getRelationships = async index => {
     const driver = await createNeo4jDriver()
     const session = driver.session()
 

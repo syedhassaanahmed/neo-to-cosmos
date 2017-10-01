@@ -6,11 +6,11 @@ bluebird.promisifyAll(redis.RedisClient.prototype)
 const redisClient = redis.createClient({ url: config.redisUrl })
 process.on('exit', () => redisClient.quit())
 
-exports.exists = async (key) => {
+exports.exists = async key => {
     return config.redisUrl ? await redisClient.existsAsync(key) : false
 }
 
-exports.get = async (key) => {
+exports.get = async key => {
     return config.redisUrl ? await redisClient.getAsync(key) : undefined
 }
 

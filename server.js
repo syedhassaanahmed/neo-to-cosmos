@@ -1,36 +1,18 @@
-import { createClient } from 'gremlin'
 import config from './config.json'
+import cosmos from './cosmos.js'
 import neo from './neo.js'
 import * as throttle from 'promise-parallel-throttle'
-import url from 'url'
-import { DocumentClientWrapper as DocumentClient } from 'documentdb-q-promises'
 import cache from './cache.js'
 import Log from 'log'
 
 const log = new Log(config.logLevel)
-
-// Graph client
-const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com',
-    '.graphs.azure.com')
-const gremlinClient = createClient(443, graphEndpoint,
-    {
-        'session': false,
-        'ssl': true,
-        'user': `/dbs/${config.cosmosDB.database}/colls/${config.cosmosDB.collection}`,
-        'password': config.cosmosDB.authKey
-    })
-
-// DocumentDB client
-const documentClient = new DocumentClient(config.cosmosDB.endpoint,
-    { masterKey: config.cosmosDB.authKey })
-const databaseLink = `dbs/${config.cosmosDB.database}`
 
 const nodeIndexKey = 'nodeIndex'
 const relationshipIndexKey = 'relationshipIndex'
 
 const migrateData = async () => {
     await handleRestart()
-    await createCosmosCollectionIfNeeded()
+    await cosmos.createCollectionIfNeeded()
     await createVertexes()
     await createEdges()
 }
@@ -38,50 +20,12 @@ const migrateData = async () => {
 const handleRestart = async () => {
     if (process.argv[2] === 'restart') {
         log.info('starting fresh ...')
-        
-        try {
-            const collectionLink = `${databaseLink}/colls/${config.cosmosDB.collection}`
-            await documentClient.deleteCollectionAsync(collectionLink)
-        } catch (err) {
-            log.info(`Collection ${config.cosmosDB.collection} does not exist`)
-        }
 
-        await cache.flush()
+        await Promise.all([
+            cosmos.deleteCollection(),
+            cache.flush()
+        ])
     }
-}
-
-const createCosmosCollectionIfNeeded = async () => {
-    try {
-        await documentClient.createDatabaseAsync({ id: config.cosmosDB.database })
-    } catch(err) {
-        log.info(`Database ${config.cosmosDB.database} already exists`)
-    }
-
-    try {
-        await documentClient.createCollectionAsync(databaseLink, 
-            { id: config.cosmosDB.collection }, 
-            {offerThroughput: config.cosmosDB.offerThroughput})
-    } catch (err) {
-        log.info(`Collection ${config.cosmosDB.collection} already exists`)
-    }
-}
-
-const executeGremlin = query => {
-    log.debug(query)
-
-    const promise = new Promise((resolve, reject) =>
-        gremlinClient.execute(query,
-            (err, results) => {
-                if (err && !err.message.includes('Resource with specified id or name already exists')) {
-                    reject(err)
-                    return
-                }
-                
-                resolve(results)
-            },
-        ))
-
-    return promise
 }
 
 const createVertexes = async () => {
@@ -92,12 +36,12 @@ const createVertexes = async () => {
     while (neoNodes.length > 0) {
         const promises = neoNodes.map(neoNode => async () => {
             const cacheKey = neoNode.identity.toString()
-            
+
             if (await cache.exists(cacheKey)) {
                 log.info(`Skipping Node ${cacheKey}`)
             }
             else {
-                await executeGremlin(toGremlinVertex(neoNode))
+                await cosmos.executeGremlin(toGremlinVertex(neoNode))
                 cache.set(cacheKey, '')
             }
         })
@@ -148,9 +92,9 @@ const createEdges = async () => {
             if (await cache.exists(cacheKey)) {
                 log.info(`Skipping Relationship ${cacheKey}`)
             } else {
-                await executeGremlin(toGremlinEdge(neoRelationship))
+                await cosmos.executeGremlin(toGremlinEdge(neoRelationship))
                 cache.set(cacheKey, '')
-            }            
+            }
         })
 
         await throttle.all(promises, {
