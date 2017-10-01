@@ -45,7 +45,7 @@ https://docs.microsoft.com/en-us/azure/cosmos-db/create-graph-dotnet).
 You don't need to create a graph, because the code will do it for you.
 
 ## Final steps
-Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/sampleConfig.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as a Redis cache to facilitate restart scenario.
+Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/sampleConfig.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate restart scenario.
 
 ### Step 1: Get Your Cosmos DB Endpoint.
 <img src="images/azure-cosmos-keys.png"/>
@@ -59,8 +59,8 @@ The primary or secondary key can be used as the `cosmosDb.authKey`
 ### Step 3: Neo4j config
 If you used the defaults, you should only need to set `neo4j.pass` to whatever you changed it to when you first logged in.
 
-### Step 4: Setup a Redis Server
-Setup a local or remote Redis server and specify `redisUrl` in the config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB RUs. The fastest way to setup Redis is to use docker. 
+### Step 4 (Optional): Setup a Redis Server
+Setup a local or remote Redis server and specify an optional `redisUrl` value in the config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB RUs. The fastest way to setup Redis is to use docker. 
 ```
 docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 ```

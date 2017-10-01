@@ -4,10 +4,8 @@ import neo4j from 'neo4j-driver'
 import * as throttle from 'promise-parallel-throttle'
 import url from 'url'
 import { DocumentClientWrapper as DocumentClient } from 'documentdb-q-promises'
+import cache from './cache.js'
 import Log from 'log'
-import redis from 'redis'
-import bluebird from 'bluebird'
-bluebird.promisifyAll(redis.RedisClient.prototype)
 
 const log = new Log(config.logLevel)
 
@@ -27,9 +25,6 @@ const documentClient = new DocumentClient(config.cosmosDB.endpoint,
     { masterKey: config.cosmosDB.authKey })
 const databaseLink = `dbs/${config.cosmosDB.database}`
 
-// Redis client
-const redisClient = redis.createClient({url: config.redisUrl})
-
 const vertexIndexKey = 'vertexIndex'
 const edgeIndexKey = 'edgeIndex'
 
@@ -48,10 +43,10 @@ const handleRestart = async () => {
             const collectionLink = `${databaseLink}/colls/${config.cosmosDB.collection}`
             await documentClient.deleteCollectionAsync(collectionLink)
         } catch (err) {
-            log.error(`Collection ${config.cosmosDB.collection} does not exist`)
+            log.info(`Collection ${config.cosmosDB.collection} does not exist`)
         }
 
-        await redisClient.flushdbAsync()
+        await cache.flush()
     }
 }
 
@@ -59,15 +54,15 @@ const createCosmosCollectionIfNeeded = async () => {
     try {
         await documentClient.createDatabaseAsync({ id: config.cosmosDB.database })
     } catch(err) {
-        log.error(`Database ${config.cosmosDB.database} already exists`)
+        log.info(`Database ${config.cosmosDB.database} already exists`)
     }
 
     try {
         await documentClient.createCollectionAsync(databaseLink, 
             { id: config.cosmosDB.collection }, 
-            {offerThroughput: config.cosmosDB.offerThroughput})            
+            {offerThroughput: config.cosmosDB.offerThroughput})
     } catch (err) {
-        log.error(`Collection ${config.cosmosDB.collection} already exists`)
+        log.info(`Collection ${config.cosmosDB.collection} already exists`)
     }
 }
 
@@ -84,13 +79,13 @@ const executeGremlin = query => {
                 
                 resolve(results)
             },
-        ))  
+        ))
 
     return promise
 }
 
 const createVertexes = async () => {
-    const vertexIndex = await redisClient.getAsync(vertexIndexKey)
+    const vertexIndex = await cache.get(vertexIndexKey)
     let index = vertexIndex ? Number.parseInt(vertexIndex) : 0
     let neoVertexes = await readNeoVertexes(index)
 
@@ -98,12 +93,12 @@ const createVertexes = async () => {
         const promises = neoVertexes.map(neoVertex => async () => {
             const cacheKey = neoVertex.identity.toString()
             
-            if (await redisClient.existsAsync(cacheKey)) {
+            if (await cache.exists(cacheKey)) {
                 log.info(`Skipping vertex ${cacheKey}`)
             }
             else {
                 await executeGremlin(toGremlinVertex(neoVertex))
-                redisClient.set(cacheKey, '')
+                cache.set(cacheKey, '')
             }
         })
 
@@ -112,8 +107,8 @@ const createVertexes = async () => {
             failFast: true
         })
 
-        redisClient.set(vertexIndexKey, ++index)
-        const nextIndex = index * config.pageSize        
+        cache.set(vertexIndexKey, ++index)
+        const nextIndex = index * config.pageSize
         log.info(nextIndex)
         neoVertexes = await readNeoVertexes(nextIndex)
     }
@@ -160,7 +155,7 @@ const getPropValue = property => {
 }
 
 const createEdges = async () => {
-    const edgeIndex = await redisClient.getAsync(edgeIndexKey)
+    const edgeIndex = await cache.get(edgeIndexKey)
     let index = edgeIndex ? Number.parseInt(edgeIndex) : 0
     let neoEdges = await readNeoEdges(index)
 
@@ -168,11 +163,11 @@ const createEdges = async () => {
         const promises = neoEdges.map(neoEdge => async () => {
             const cacheKey = `${neoEdge.start}_${neoEdge.type}_${neoEdge.end}`
 
-            if (await redisClient.existsAsync(cacheKey)) {
+            if (await cache.exists(cacheKey)) {
                 log.info(`Skipping edge ${cacheKey}`)
             } else {
-                await executeGremlin(toGremlinEdge(neoEdge))            
-                redisClient.set(cacheKey, '')
+                await executeGremlin(toGremlinEdge(neoEdge))
+                cache.set(cacheKey, '')
             }            
         })
 
@@ -181,7 +176,7 @@ const createEdges = async () => {
             failFast: true
         })
 
-        redisClient.set(edgeIndexKey, ++index)
+        cache.set(edgeIndexKey, ++index)
         const nextIndex = index * config.pageSize
         log.info(nextIndex)
         neoEdges = await readNeoEdges(nextIndex)
@@ -213,12 +208,7 @@ const toGremlinEdge = neoEdge => {
     return edge
 }
 
-migrateData().then(_ => closeApp()).catch(error => {
+migrateData().then(_ => process.exit()).catch(error => {
     log.error(error)
-    closeApp()
-})
-
-const closeApp = () => {
-    redisClient.quit()
     process.exit()
-}
+})
