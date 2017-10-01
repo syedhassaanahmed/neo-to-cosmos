@@ -1,6 +1,6 @@
 import { createClient } from 'gremlin'
 import config from './config.json'
-import neo4j from 'neo4j-driver'
+import neo from './neo.js'
 import * as throttle from 'promise-parallel-throttle'
 import url from 'url'
 import { DocumentClientWrapper as DocumentClient } from 'documentdb-q-promises'
@@ -25,8 +25,8 @@ const documentClient = new DocumentClient(config.cosmosDB.endpoint,
     { masterKey: config.cosmosDB.authKey })
 const databaseLink = `dbs/${config.cosmosDB.database}`
 
-const vertexIndexKey = 'vertexIndex'
-const edgeIndexKey = 'edgeIndex'
+const nodeIndexKey = 'nodeIndex'
+const relationshipIndexKey = 'relationshipIndex'
 
 const migrateData = async () => {
     await handleRestart()
@@ -85,19 +85,19 @@ const executeGremlin = query => {
 }
 
 const createVertexes = async () => {
-    const vertexIndex = await cache.get(vertexIndexKey)
-    let index = vertexIndex ? Number.parseInt(vertexIndex) : 0
-    let neoVertexes = await readNeoVertexes(index)
+    const nodeIndex = await cache.get(nodeIndexKey)
+    let index = nodeIndex ? Number.parseInt(nodeIndex) : 0
+    let neoNodes = await neo.getNodes(index)
 
-    while (neoVertexes.length > 0) {
-        const promises = neoVertexes.map(neoVertex => async () => {
-            const cacheKey = neoVertex.identity.toString()
+    while (neoNodes.length > 0) {
+        const promises = neoNodes.map(neoNode => async () => {
+            const cacheKey = neoNode.identity.toString()
             
             if (await cache.exists(cacheKey)) {
-                log.info(`Skipping vertex ${cacheKey}`)
+                log.info(`Skipping Node ${cacheKey}`)
             }
             else {
-                await executeGremlin(toGremlinVertex(neoVertex))
+                await executeGremlin(toGremlinVertex(neoNode))
                 cache.set(cacheKey, '')
             }
         })
@@ -107,44 +107,26 @@ const createVertexes = async () => {
             failFast: true
         })
 
-        cache.set(vertexIndexKey, ++index)
+        cache.set(nodeIndexKey, ++index)
         const nextIndex = index * config.pageSize
-        log.info(nextIndex)
-        neoVertexes = await readNeoVertexes(nextIndex)
+        log.info('Node: ' + nextIndex)
+        neoNodes = await neo.getNodes(nextIndex)
     }
 }
 
-const readNeoVertexes = async index => {
-    const driver = await createNeo4jDriver()
-    const session = driver.session()
+const toGremlinVertex = neoNode => {
+    let vertex = `g.addV('${neoNode.labels[0]}')`
+    vertex += `.property('id', '${neoNode.identity}')`
 
-    const vertexQuery = `MATCH (n) RETURN n ORDER BY ID(n) SKIP ${index} LIMIT ${config.pageSize}`
-    const vertexes = await session.run(vertexQuery)
-
-    session.close()
-    driver.close()
-
-    return vertexes.records.map(record => record.get('n'))
-}
-
-const createNeo4jDriver = async () => {
-    return await neo4j.driver(config.neo4j.bolt,
-        neo4j.auth.basic(config.neo4j.user, config.neo4j.pass))
-}
-
-const toGremlinVertex = neoVertex => {
-    let vertex = `g.addV('${neoVertex.labels[0]}')`
-    vertex += `.property('id', '${neoVertex.identity}')`
-
-    for (const key of Object.keys(neoVertex.properties)) {
-        const propValue = getPropValue(neoVertex.properties[key])
+    for (const key of Object.keys(neoNode.properties)) {
+        const propValue = getPropertyValue(neoNode.properties[key])
         vertex += `.property('${key}', '${propValue}')`
     }
 
     return vertex
 }
 
-const getPropValue = property => {
+const getPropertyValue = property => {
     return property.toString()
         .replace(/[']/g, '\\\'')
         .replace(/[’]/g, '\\\’')
@@ -155,18 +137,18 @@ const getPropValue = property => {
 }
 
 const createEdges = async () => {
-    const edgeIndex = await cache.get(edgeIndexKey)
-    let index = edgeIndex ? Number.parseInt(edgeIndex) : 0
-    let neoEdges = await readNeoEdges(index)
+    const relationshipIndex = await cache.get(relationshipIndexKey)
+    let index = relationshipIndex ? Number.parseInt(relationshipIndex) : 0
+    let neoRelationships = await neo.getRelationships(index)
 
-    while (neoEdges.length > 0) {
-        const promises = neoEdges.map(neoEdge => async () => {
-            const cacheKey = `${neoEdge.start}_${neoEdge.type}_${neoEdge.end}`
+    while (neoRelationships.length > 0) {
+        const promises = neoRelationships.map(neoRelationship => async () => {
+            const cacheKey = `${neoRelationship.start}_${neoRelationship.type}_${neoRelationship.end}`
 
             if (await cache.exists(cacheKey)) {
-                log.info(`Skipping edge ${cacheKey}`)
+                log.info(`Skipping Relationship ${cacheKey}`)
             } else {
-                await executeGremlin(toGremlinEdge(neoEdge))
+                await executeGremlin(toGremlinEdge(neoRelationship))
                 cache.set(cacheKey, '')
             }            
         })
@@ -176,35 +158,21 @@ const createEdges = async () => {
             failFast: true
         })
 
-        cache.set(edgeIndexKey, ++index)
+        cache.set(relationshipIndexKey, ++index)
         const nextIndex = index * config.pageSize
-        log.info(nextIndex)
-        neoEdges = await readNeoEdges(nextIndex)
+        log.info('Relationship: ' + nextIndex)
+        neoRelationships = await neo.getRelationships(nextIndex)
     }
 }
 
-const readNeoEdges = async (index) => {
-    const driver = await createNeo4jDriver()
-    const session = driver.session()
-
-    const edgeQuery = `MATCH (a)-[r]->(b) RETURN r ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
-
-    const edges = await session.run(edgeQuery)
-
-    session.close()
-    driver.close()
-
-    return edges.records.map(record => record.get('r'))
-}
-
-const toGremlinEdge = neoEdge => {
-    let edge = `g.V('${neoEdge.start}')`
-    edge += `.addE('${neoEdge.type}')`
-    for (const key of Object.keys(neoEdge.properties)) {
-        const propValue = getPropValue(neoEdge.properties[key])
+const toGremlinEdge = neoRelationship => {
+    let edge = `g.V('${neoRelationship.start}')`
+    edge += `.addE('${neoRelationship.type}')`
+    for (const key of Object.keys(neoRelationship.properties)) {
+        const propValue = getPropertyValue(neoRelationship.properties[key])
         edge += `.property('${key}', '${propValue}')`
     }
-    edge += `.to(g.V('${neoEdge.end}'))`
+    edge += `.to(g.V('${neoRelationship.end}'))`
     return edge
 }
 
