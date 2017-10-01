@@ -1,5 +1,5 @@
 # neo-to-cosmos
-This app takes a Neo4j database and copies the content in full to an Azure Cosmos DB database using Graph (gremlin) API.
+This app takes a Neo4j database and copies all contents to an Azure Cosmos DB database using Graph (gremlin) API.
 
 ## Credits
 This is an x-plat continuation of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos).
@@ -20,9 +20,9 @@ Once you have that running , spin up a copy of Neo4j:
 docker run --publish=7474:7474 --publish=7687:7687 --volume=$HOME/neo4j/data:/data neo4j
 ```
 
-If you don't already have the Neo4j image loaded, it will automatically be downloaded. Then, Docker will start up the image and set up both the Neo4j bolt on port 7687 and the Neo4j browser on port 7474. Finally, it will store all of the data in your user home directory under neo4j/data. This way, your data will survive container reboots.
+If you don't already have Neo4j image loaded, it will automatically be downloaded. Then, Docker will start up the image and set up both Neo4j bolt on port 7687 and Neo4j browser on port 7474. Finally, it will store all data in your user home directory under neo4j/data. This way, your data will survive container reboots.
 
-Next, spin up the Neo4j data browser by pointing to http://localhost:7474. The initial login/password will be "neo4j/neo4j" and you'll have to change the password. This password will go in the app configuration later. Start one of the code walkthroughs to load up some data.
+Next, spin up Neo4j data browser by pointing to http://localhost:7474. The initial login/password will be "neo4j/neo4j" and you'll have to change the password. This password will go in the app configuration later. Start one of the code walkthroughs to load up some data.
 
 ```
 :play write-code
@@ -37,30 +37,30 @@ or
 ```
 :play northwind-graph
 ```
-Walkthrough enough to completely load the data. Be careful...the last step of movie-graph will have you deleting all your new data!
+Walkthrough enough to completely load the data. Be careful... last step of the movie-graph will have you deleting all your new data!
 
 ## Get Your Cosmos DB ready
 If you don't have Cosmos DB set up yet, head over to Azure Cosmos DB documentation and follow the instructions to [Create a Database Account](
 https://docs.microsoft.com/en-us/azure/cosmos-db/create-graph-dotnet).
-You don't need to create a graph, because the code will do it for you.
+You don't need to create a graph, because the app will do it for you.
 
 ## Final steps
-Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/sampleConfig.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate restart scenario.
+Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/sampleConfig.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate resume scenario.
 
 ### Step 1: Get Your Cosmos DB Endpoint.
 <img src="images/azure-cosmos-keys.png"/>
 
-Select the Keys tab of your Azure Cosmos DB account you'll see the "URI"...copy that value to the `cosmosDb.endpoint`.
+Select the Keys tab of your Azure Cosmos DB account you'll see the "URI"...copy that value to  `cosmosDb.endpoint`.
 
 ### Step 2: Get Your Cosmos DB AuthKey.
-The primary or secondary key can be used as the `cosmosDb.authKey`
+Either primary or secondary key can be used as `cosmosDb.authKey`
 > Hint: Use the copy button...its way easier than trying to select it with a mouse.
 
 ### Step 3: Neo4j config
 If you used the defaults, you should only need to set `neo4j.pass` to whatever you changed it to when you first logged in.
 
-### Step 4 (Optional): Setup a Redis Server
-Setup a local or remote Redis server and specify an optional `redisUrl` value in the config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB RUs. The fastest way to setup Redis is to use docker. 
+### Step 4 (Optional): Set up a Redis Server
+Set up a local or remote Redis server and specify an optional `redisUrl` value in the config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB RUs. The fastest way to set up Redis is to use docker. 
 ```
 docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 ```
