@@ -31,9 +31,15 @@ const handleRestart = async () => {
 const createVertexes = async () => {
     const nodeIndex = await cache.get(nodeIndexKey)
     let index = nodeIndex ? Number.parseInt(nodeIndex) : 0
-    let neoNodes = await neo.getNodes(index)
+    let neoNodes = []
 
-    while (neoNodes.length > 0) {
+    do {
+        log.info('Node: ' + index)
+
+        neoNodes = await neo.getNodes(index)
+        if (neoNodes.length === 0)
+            break
+
         const promises = neoNodes.map(neoNode => async () => {
             const cacheKey = neoNode.identity.toString()
 
@@ -51,11 +57,10 @@ const createVertexes = async () => {
             failFast: true
         })
 
-        cache.set(nodeIndexKey, ++index)
-        const nextIndex = index * config.pageSize
-        log.info('Node: ' + nextIndex)
-        neoNodes = await neo.getNodes(nextIndex)
-    }
+        index += config.pageSize
+        cache.set(nodeIndexKey, index)
+
+    } while (true)
 }
 
 const toGremlinVertex = neoNode => {
@@ -83,9 +88,15 @@ const getPropertyValue = property => {
 const createEdges = async () => {
     const relationshipIndex = await cache.get(relationshipIndexKey)
     let index = relationshipIndex ? Number.parseInt(relationshipIndex) : 0
-    let neoRelationships = await neo.getRelationships(index)
+    let neoRelationships = []
 
-    while (neoRelationships.length > 0) {
+    do {
+        log.info('Relationship: ' + index)
+
+        neoRelationships = await neo.getRelationships(index)
+        if (neoRelationships.length === 0)
+            break
+
         const promises = neoRelationships.map(neoRelationship => async () => {
             const cacheKey = `${neoRelationship.start}_${neoRelationship.type}_${neoRelationship.end}`
 
@@ -102,11 +113,10 @@ const createEdges = async () => {
             failFast: true
         })
 
-        cache.set(relationshipIndexKey, ++index)
-        const nextIndex = index * config.pageSize
-        log.info('Relationship: ' + nextIndex)
-        neoRelationships = await neo.getRelationships(nextIndex)
-    }
+        index += config.pageSize
+        cache.set(relationshipIndexKey, index)
+
+    } while (true)
 }
 
 const toGremlinEdge = neoRelationship => {
