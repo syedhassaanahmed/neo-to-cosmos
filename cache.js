@@ -1,25 +1,30 @@
-import config from './config.json'
 import redis from 'redis'
 import bluebird from 'bluebird'
 bluebird.promisifyAll(redis.RedisClient.prototype)
 
-const redisClient = redis.createClient({ url: config.redisUrl })
-process.on('exit', () => redisClient.quit())
+export default function (config) {
+    let module = {}
 
-exports.exists = async key => {
-    return config.redisUrl ? await redisClient.existsAsync(key) : false
-}
+    const redisClient = redis.createClient({ url: config.redisUrl })
+    process.on('exit', () => redisClient.quit())
 
-exports.get = async key => {
-    return config.redisUrl ? await redisClient.getAsync(key) : undefined
-}
+    module.exists = async key => {
+        return config.redisUrl ? await redisClient.existsAsync(key) : false
+    }
 
-exports.set = (key, value) => {
-    if (config.redisUrl)
-        redisClient.set(key, value)
-}
+    module.get = async key => {
+        return config.redisUrl ? await redisClient.getAsync(key) : undefined
+    }
 
-exports.flush = async () => {
-    if (config.redisUrl)
-        await redisClient.flushdbAsync()
+    module.set = (key, value) => {
+        if (config.redisUrl)
+            redisClient.set(key, value)
+    }
+
+    module.flush = async () => {
+        if (config.redisUrl)
+            await redisClient.flushdbAsync()
+    }
+
+    return module
 }

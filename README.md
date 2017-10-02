@@ -1,5 +1,5 @@
 # neo-to-cosmos
-This app takes a Neo4j database and copies all contents to an Azure Cosmos DB database using Graph (gremlin) API.
+This app takes a Neo4j database snapshot and copies all contents to an Azure Cosmos DB database using Graph (gremlin) API.
 
 ## Credits
 This is an x-plat continuation of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos).

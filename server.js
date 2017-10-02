@@ -1,14 +1,21 @@
 import config from './config.json'
-import cosmos from './cosmos.js'
-import neo from './neo.js'
 import * as throttle from 'promise-parallel-throttle'
-import cache from './cache.js'
 import Log from 'log'
+import Cosmos from './cosmos.js'
+import Neo from './neo.js'
+import Cache from './cache.js'
+
+// Set config defaults
+config.logLevel = config.logLevel || 'info'
+config.pageSize = config.pageSize || 100
+config.threadCount = config.threadCount || 1
 
 const log = new Log(config.logLevel)
+log.info(config)
 
-const nodeIndexKey = 'nodeIndex'
-const relationshipIndexKey = 'relationshipIndex'
+const cosmos = Cosmos(config, log)
+const neo = Neo(config)
+const cache = Cache(config)
 
 const migrateData = async () => {
     await handleRestart()
@@ -28,6 +35,7 @@ const handleRestart = async () => {
     }
 }
 
+const nodeIndexKey = 'nodeIndex'
 const createVertexes = async () => {
     const indexString = await cache.get(nodeIndexKey)
     let index = indexString ? Number.parseInt(indexString) : 0
@@ -53,7 +61,7 @@ const createVertexes = async () => {
         })
 
         await throttle.all(promises, {
-            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too large
+            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too big
             failFast: true
         })
 
@@ -84,6 +92,7 @@ const getPropertyValue = property => {
         .replace(/[”]/g, '\\\”')
 }
 
+const relationshipIndexKey = 'relationshipIndex'
 const createEdges = async () => {
     const indexString = await cache.get(relationshipIndexKey)
     let index = indexString ? Number.parseInt(indexString) : 0
@@ -108,7 +117,7 @@ const createEdges = async () => {
         })
 
         await throttle.all(promises, {
-            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too large
+            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too big
             failFast: true
         })
 

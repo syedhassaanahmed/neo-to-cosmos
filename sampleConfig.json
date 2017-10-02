@@ -3,16 +3,12 @@
         "endpoint": "https://mycosmosdb.documents.azure.com:443/",
         "authKey": "<copy primary key from Azure portal>",
         "database": "<database name>",
-        "collection": "<collection name>",
-        "offerThroughput": "400"        
+        "collection": "<collection name>"
     },
     "neo4j": {
         "bolt": "bolt://localhost:7687",
         "user": "<neo4j user>",
         "pass": "<neo4j password>"
     },
-    "redisUrl": "redis://localhost:6379/",
-    "threadCount": 3,
-    "pageSize": 100,
-    "logLevel": "info"
+    "redisUrl": "redis://localhost:6379/"
 }

@@ -1,34 +1,39 @@
-import config from './config.json'
 import neo4j from 'neo4j-driver'
 
-const createNeo4jDriver = async () => {
-    return await neo4j.driver(config.neo4j.bolt,
-        neo4j.auth.basic(config.neo4j.user, config.neo4j.pass))
-}
+export default function (config) {
+    let module = {}
 
-exports.getNodes = async index => {
-    const driver = await createNeo4jDriver()
-    const session = driver.session()
+    const createNeo4jDriver = async () => {
+        return await neo4j.driver(config.neo4j.bolt,
+            neo4j.auth.basic(config.neo4j.user, config.neo4j.pass))
+    }
 
-    const nodeQuery = `MATCH (n) RETURN n ORDER BY ID(n) SKIP ${index} LIMIT ${config.pageSize}`
-    const nodes = await session.run(nodeQuery)
+    module.getNodes = async index => {
+        const driver = await createNeo4jDriver()
+        const session = driver.session()
 
-    session.close()
-    driver.close()
+        const nodeQuery = `MATCH (n) RETURN n ORDER BY ID(n) SKIP ${index} LIMIT ${config.pageSize}`
+        const nodes = await session.run(nodeQuery)
 
-    return nodes.records.map(record => record.get('n'))
-}
+        session.close()
+        driver.close()
 
-exports.getRelationships = async index => {
-    const driver = await createNeo4jDriver()
-    const session = driver.session()
+        return nodes.records.map(record => record.get('n'))
+    }
 
-    const relationshipQuery = `MATCH (a)-[r]->(b) RETURN r ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
+    module.getRelationships = async index => {
+        const driver = await createNeo4jDriver()
+        const session = driver.session()
 
-    const relationships = await session.run(relationshipQuery)
+        const relationshipQuery = `MATCH (a)-[r]->(b) RETURN r ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
 
-    session.close()
-    driver.close()
+        const relationships = await session.run(relationshipQuery)
 
-    return relationships.records.map(record => record.get('r'))
+        session.close()
+        driver.close()
+
+        return relationships.records.map(record => record.get('r'))
+    }
+
+    return module
 }
