@@ -60,7 +60,7 @@ Either primary or secondary key can be used as `cosmosDb.authKey`
 If you used the defaults, you should only need to set `neo4j.pass` to whatever you changed it to when you first logged in.
 
 ### Step 4 (Optional): Set up a Redis Server
-Set up a local or remote Redis server and specify an optional `redisUrl` value in the config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB RUs. The fastest way to set up Redis is to use docker. 
+Set up a local or remote Redis server and specify an optional `redis` value in the config. Redis allows us to resume an incomplete data migration without consuming Cosmos DB RUs. The fastest way to set up Redis is to use docker. 
 ```
 docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 ```
