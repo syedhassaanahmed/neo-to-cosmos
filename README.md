@@ -17,7 +17,7 @@ If you're on Windows, make sure you've configured Hyper-V, and installed [Docker
 Once you have that running , spin up a copy of Neo4j:
 
 ```
-docker run -d -p 7474:7474 -p 7687:7687 -v $HOME/neo4j/data:/data neo4j
+docker run --name neo2cosmos-neo4j -p 7474:7474 -p 7687:7687 -v $HOME/neo4j/data:/data -d neo4j
 ```
 
 If you don't already have Neo4j image loaded, it will automatically be downloaded. Then, Docker will start up the image and set up both Neo4j bolt on port 7687 and Neo4j browser on port 7474. Finally, it will store all data in your user home directory under neo4j/data. This way, your data will survive container reboots.
