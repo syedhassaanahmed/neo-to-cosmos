@@ -44,7 +44,7 @@ If you don't have Cosmos DB set up yet, head over to Azure Cosmos DB documentati
 https://docs.microsoft.com/en-us/azure/cosmos-db/create-graph-dotnet).
 You don't need to create a graph, because the app will do it for you.
 
-## Final steps
+## Configuration
 Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/sampleConfig.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate resume scenario.
 
 ### Step 1: Get Your Cosmos DB Endpoint.
@@ -67,3 +67,11 @@ docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 
 ## Run the tool
 `npm start` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. For fresh clean start, do `npm start -- restart`.
+
+### Docker
+Here is how to run the dockerized version of the tool.
+```
+docker run -it --rm --network "host" -v ${pwd}/config.json:/app/config.json syedhassaanahmed/neo2cosmos
+```
+- `-v ${pwd}/config.json:/app/config.json` mounts config file into the container.
+- `--network "host"` allows us to access local Redis and Neo4j using `localhost`.
