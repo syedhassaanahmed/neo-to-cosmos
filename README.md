@@ -14,7 +14,7 @@ The first thing you'll need is a Neo4j database. Docker is the quickest way to g
 
 If you're on Windows, make sure you've configured Hyper-V, and installed [Docker for Windows](https://docs.docker.com/docker-for-windows/). Also make sure to use Linux containers.
 
-Once you have that running , spin up a copy of Neo4j:
+Once you have that running, spin up a copy of Neo4j:
 
 ```
 docker run --name neo2cosmos-neo4j -p 7474:7474 -p 7687:7687 -v $HOME/neo4j/data:/data -d neo4j
