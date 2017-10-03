@@ -1,4 +1,4 @@
-import config from './config.json'
+import config from '../config.json'
 import * as throttle from 'promise-parallel-throttle'
 import Log from 'log'
 import Cosmos from './cosmos.js'

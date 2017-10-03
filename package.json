@@ -1,9 +1,8 @@
 {
   "name": "neo-to-cosmos",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/index.js"
   },
   "author": "Syed Hassaan Ahmed",
   "license": "MIT",
