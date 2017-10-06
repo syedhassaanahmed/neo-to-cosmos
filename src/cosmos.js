@@ -40,7 +40,7 @@ export default function (config, log) {
 
     const gremlinClient = createClient(443, graphEndpoint,
         {
-            'session': false,
+            'session': true,
             'ssl': true,
             'user': '/' + collectionLink,
             'password': config.cosmosDB.authKey

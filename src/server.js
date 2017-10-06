@@ -4,6 +4,7 @@ import Log from 'log'
 import Cosmos from './cosmos.js'
 import Neo from './neo.js'
 import Cache from './cache.js'
+import jsesc from 'jsesc'
 
 // Set config defaults
 config.logLevel = config.logLevel || 'info'
@@ -20,8 +21,11 @@ const cache = Cache(config)
 const migrateData = async () => {
     await handleRestart()
     await cosmos.createCollectionIfNeeded()
+
+    await neo.initialize()
     await createVertexes()
     await createEdges()
+    await neo.close()
 }
 
 const handleRestart = async () => {
@@ -83,13 +87,11 @@ const toGremlinVertex = node => {
 }
 
 const getPropertyValue = property => {
-    return property.toString()
-        .replace(/[']/g, '\\\'')
-        .replace(/[’]/g, '\\\’')
-        .replace(/[`]/g, '%60')
-        .replace(/["]/g, '\\\"')
-        .replace(/[“]/g, '\\\“')
-        .replace(/[”]/g, '\\\”')
+    return jsesc(property.toString())
+        .replace(/[\\]/g, '\\\\')
+        .replace(/'/g, '\\\'')
+        .replace(/`/g, '\`')
+        .replace(/"/g, '\"')
 }
 
 const relationshipIndexKey = 'relationshipIndex'
