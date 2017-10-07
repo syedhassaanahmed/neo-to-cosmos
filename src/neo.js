@@ -4,11 +4,21 @@ export default function (config) {
     let module = {}
     let driver, session
 
-    module.initialize = async () => {
+    module.initialize = async() => {
         driver = await neo4j.driver(config.neo4j.bolt,
             neo4j.auth.basic(config.neo4j.user, config.neo4j.pass))
 
         session = driver.session()
+    }
+
+    module.getTotalNodes = async() => {
+        const result = await session.run('MATCH (n) RETURN COUNT(n)')
+        return result.records[0].get(0)
+    }
+
+    module.getTotalRelationships = async() => {
+        const result = await session.run('MATCH (a)-[r]->(b) RETURN COUNT(r)')
+        return result.records[0].get(0)
     }
 
     module.getNodes = async index => {

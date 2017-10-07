@@ -68,7 +68,7 @@ docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 ```
 
 ## Run the tool
-`npm start` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. For fresh clean start, do `npm start -- restart`.
+`npm start` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. For fresh clean start, do `npm start -- -r`.
 
 ### Docker
 Here is how to run the dockerized version of the tool.

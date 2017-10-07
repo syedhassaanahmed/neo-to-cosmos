@@ -11,6 +11,7 @@
     "url": "https://github.com/syedhassaanahmed/neo-to-cosmos"
   },
   "dependencies": {
+    "argparse": "^1.0.9",
     "bluebird": "^3.5.0",
     "documentdb-q-promises": "^1.6.0",
     "gremlin": "^2.6.0",

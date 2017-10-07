@@ -8,11 +8,15 @@ export default function (config) {
     let redisClient
 
     if (config.redis) {
-        let redisOptions = { auth_pass: config.redis.pass }
-        if (config.redis.ssl) {
-            redisOptions.tls = { servername: config.redis.host }
+        let redisOptions = {
+            auth_pass: config.redis.pass
         }
-    
+        if (config.redis.ssl) {
+            redisOptions.tls = {
+                servername: config.redis.host
+            }
+        }
+
         redisClient = redis.createClient(config.redis.port, config.redis.host, redisOptions)
         process.on('exit', () => redisClient.quit())
     }
@@ -30,7 +34,7 @@ export default function (config) {
             redisClient.set(key, value)
     }
 
-    module.flush = async () => {
+    module.flush = async() => {
         if (redisClient)
             await redisClient.flushdbAsync()
     }
