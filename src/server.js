@@ -88,7 +88,7 @@ const toGremlinVertex = node => {
 
 const getPropertyValue = property => {
     return jsesc(property.toString())
-        .replace(/[\\]/g, '\\\\')
+        .replace(/\\/g, '\\\\')
         .replace(/'/g, '\\\'')
         .replace(/`/g, '\`')
         .replace(/"/g, '\"')
