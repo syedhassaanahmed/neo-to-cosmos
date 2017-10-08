@@ -107,7 +107,7 @@ const createVertexes = async() => {
         })
 
         await throttle.all(promises, {
-            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too big
+            maxInProgress: config.threadCount, // we get 'Request rate is large' if this value is too big
             failFast: true
         })
 
@@ -161,7 +161,7 @@ const createEdges = async() => {
         })
 
         await throttle.all(promises, {
-            maxInProgress: config.threadCount, // we get 'Request rate too large' if this value is too big
+            maxInProgress: config.threadCount, // we get 'Request rate is large' if this value is too big
             failFast: true
         })
 

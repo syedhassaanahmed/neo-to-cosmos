@@ -59,10 +59,17 @@ export default function (config, log) {
 
         const promise = new Promise((resolve, reject) =>
             gremlinClient.execute(query,
-                (err, results) => {
+                async (err, results) => {
                     if (err && !err.message.includes('Resource with specified id or name already exists')) {
-                        reject(err)
-                        return
+                        
+                        //Retry in case of RU throttle
+                        if (err.message.includes('Request rate is large')) {
+                            log.debug('Request rate is large. Retrying...')
+                            await module.executeGremlin(query)
+                        } else {
+                            reject(err)
+                            return
+                        }
                     }
 
                     resolve(results)
