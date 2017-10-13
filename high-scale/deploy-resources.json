@@ -1,0 +1,44 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "kind": "GlobalDocumentDB",
+            "name": "[resourceGroup().name]",
+            "apiVersion": "2015-04-08",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "defaultExperience": "Graph"
+            },
+            "properties": {
+                "databaseAccountOfferType": "Standard",
+                "name": "[resourceGroup().name]"
+            }
+        },
+        {
+            "type": "Microsoft.Cache/Redis",
+            "name": "[resourceGroup().name]",
+            "apiVersion": "2016-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "name": "Basic",
+                    "family": "C",
+                    "capacity": 1
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[resourceGroup().name]",
+            "apiVersion": "2016-01-01",
+            "location": "[resourceGroup().location]"
+        }
+    ]
+}

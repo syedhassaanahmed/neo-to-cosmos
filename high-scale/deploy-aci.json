@@ -1,0 +1,62 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "totalInstances": {
+            "type": "int",
+            "defaultValue": 1
+        },
+        "instanceId": {
+            "type": "int",
+            "defaultValue": 0
+        },
+        "storageAccountKey": {
+            "type": "securestring"
+        }
+    },
+    "variables": {
+        "containername": "[concat(resourceGroup().name, parameters('instanceId'))]"
+    },
+    "resources": [{
+        "name": "[variables('containername')]",
+        "type": "Microsoft.ContainerInstance/containerGroups",
+        "apiVersion": "2017-08-01-preview",
+        "location": "[resourceGroup().location]",
+        "properties": {
+            "containers": [{
+                "name": "[variables('containername')]",
+                "properties": {
+                    "image": "syedhassaanahmed/neo2cosmos",
+                    "resources": {
+                        "requests": {
+                            "cpu": 1,
+                            "memoryInGb": 1.5
+                        }
+                    },
+                    "environmentVariables": [{
+                            "name": "TOTAL",
+                            "value": "[parameters('totalInstances')]"
+                        },
+                        {
+                            "name": "INSTANCE",
+                            "value": "[parameters('instanceId')]"
+                        }
+                    ],
+                    "volumeMounts": [{
+                        "name": "config-volume",
+                        "mountPath": "/"
+                    }]
+                }
+            }],
+            "osType": "Linux",
+            "volumes": [{
+                "name": "config-volume",
+                "azureFile": {
+                    "shareName": "acishare",
+                    "storageAccountName": "[resourceGroup().name]",
+                    "storageAccountKey": "[parameters('storageAccountKey')]"
+                }
+            }]
+        }
+    }]
+}
