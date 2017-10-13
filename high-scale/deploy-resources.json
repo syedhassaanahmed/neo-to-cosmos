@@ -1,12 +1,11 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "resources": [
-        {
+    "resources": [{
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "kind": "GlobalDocumentDB",
             "name": "[resourceGroup().name]",
-            "apiVersion": "2015-04-08",
+            "apiVersion": "2016-03-31",
             "location": "[resourceGroup().location]",
             "tags": {
                 "defaultExperience": "Graph"
@@ -19,7 +18,7 @@
         {
             "type": "Microsoft.Cache/Redis",
             "name": "[resourceGroup().name]",
-            "apiVersion": "2016-04-01",
+            "apiVersion": "2017-02-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "sku": {
@@ -37,7 +36,7 @@
             },
             "kind": "Storage",
             "name": "[resourceGroup().name]",
-            "apiVersion": "2016-01-01",
+            "apiVersion": "2017-06-01",
             "location": "[resourceGroup().location]"
         }
     ]
