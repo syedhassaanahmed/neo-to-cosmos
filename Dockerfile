@@ -9,6 +9,6 @@ COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
 
-CMD ls
+CMD pwd && ls
 
 #CMD [ "npm", "start", "--", "-t", "$TOTAL", "-i", "$INSTANCE" ]
