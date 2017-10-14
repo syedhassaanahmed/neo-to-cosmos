@@ -1,4 +1,3 @@
-import config from '../config.json'
 import * as throttle from 'promise-parallel-throttle'
 import Log from 'log'
 import Cosmos from './cosmos.js'
@@ -9,18 +8,15 @@ import {
     ArgumentParser
 } from 'argparse'
 
-// Set config defaults
-config.logLevel = config.logLevel || 'info'
-config.pageSize = config.pageSize || 100
-config.threadCount = config.threadCount || 1
-
-const log = new Log(config.logLevel)
-log.info(config)
-
 // Parse cli arguments
 let argsParser = new ArgumentParser({
     addHelp: true
 })
+argsParser.addArgument(
+    ['-c', '--config'], {
+        defaultValue: '../config.json',
+        help: 'Provide config json file relative to the "src" folder'
+    })
 argsParser.addArgument(
     ['-r', '--restart'], {
         nargs: 0,
@@ -39,7 +35,16 @@ argsParser.addArgument(
         help: 'Instance ID in case of distributed load'
     })
 const args = argsParser.parseArgs()
+
+// Set config defaults
+const config = require(args.config)
+config.logLevel = config.logLevel || 'info'
+config.pageSize = config.pageSize || 100
+config.threadCount = config.threadCount || 1
+
+const log = new Log(config.logLevel)
 log.info(args)
+log.info(config)
 
 const cosmos = Cosmos(config, log)
 const neo = Neo(config)

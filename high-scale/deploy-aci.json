@@ -8,7 +8,13 @@
         },
         "storageAccountKey": {
             "type": "securestring"
+        },
+        "shareName": {
+            "type": "string"
         }
+    },
+    "variables": {
+        "mountPath": "[concat('/', parameters('shareName'))]"
     },
     "resources": [{
         "name": "[concat(resourceGroup().name, copyIndex())]",
@@ -37,11 +43,15 @@
                         {
                             "name": "INSTANCE",
                             "value": "[copyIndex()]"
+                        },
+                        {
+                            "name": "CONFIG",
+                            "value": "[concat('..', variables('mountPath'), '/config.json')]"
                         }
                     ],
                     "volumeMounts": [{
                         "name": "config-volume",
-                        "mountPath": "/app/config.json"
+                        "mountPath": "[variables('mountPath')]"
                     }]
                 }
             }],
@@ -49,7 +59,7 @@
             "volumes": [{
                 "name": "config-volume",
                 "azureFile": {
-                    "shareName": "acishare",
+                    "shareName": "[parameters('shareName')]",
                     "storageAccountName": "[resourceGroup().name]",
                     "storageAccountKey": "[parameters('storageAccountKey')]"
                 }
