@@ -46,7 +46,7 @@
                         },
                         {
                             "name": "CONFIG",
-                            "value": "[concat('..', variables('mountPath'), '/config.json')]"
+                            "value": "[concat(variables('mountPath'), '/config.json')]"
                         }
                     ],
                     "volumeMounts": [{

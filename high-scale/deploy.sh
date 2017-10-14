@@ -33,5 +33,5 @@ az storage share create -n acishare --quota 1 --account-name $NEO2COSMOS_NAME --
 az storage file upload --share-name $ACI_SHARE --source config.json --account-name $NEO2COSMOS_NAME --debug
 
 # Deploy N number of Azure container instances with ARM template
-az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-aci.json --no-wait --debug \
+az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-aci.json --debug \
     --parameters totalInstances=$INSTANCES storageAccountKey=$STORAGE_KEY shareName=$ACI_SHARE
