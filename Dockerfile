@@ -11,4 +11,4 @@ COPY . .
 
 RUN ls
 
-CMD [ "npm", "start", "--", "-t", "$TOTAL", "-i", "$INSTANCE" ]
+#CMD [ "npm", "start", "--", "-t", "$TOTAL", "-i", "$INSTANCE" ]
