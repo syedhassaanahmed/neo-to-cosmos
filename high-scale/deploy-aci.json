@@ -6,25 +6,22 @@
             "type": "int",
             "defaultValue": 1
         },
-        "instanceId": {
-            "type": "int",
-            "defaultValue": 0
-        },
         "storageAccountKey": {
             "type": "securestring"
         }
     },
-    "variables": {
-        "containername": "[concat(resourceGroup().name, parameters('instanceId'))]"
-    },
     "resources": [{
-        "name": "[variables('containername')]",
+        "name": "[concat(resourceGroup().name, copyIndex())]",
         "type": "Microsoft.ContainerInstance/containerGroups",
         "apiVersion": "2017-10-01-preview",
         "location": "[resourceGroup().location]",
+        "copy": {
+            "name": "containerGroupCopy",
+            "count": "[parameters('totalInstances')]"
+        },
         "properties": {
             "containers": [{
-                "name": "[variables('containername')]",
+                "name": "[concat(resourceGroup().name, copyIndex())]",
                 "properties": {
                     "image": "syedhassaanahmed/neo2cosmos",
                     "resources": {
@@ -39,12 +36,12 @@
                         },
                         {
                             "name": "INSTANCE",
-                            "value": "[parameters('instanceId')]"
+                            "value": "[copyIndex()]"
                         }
                     ],
                     "volumeMounts": [{
                         "name": "config-volume",
-                        "mountPath": "/"
+                        "mountPath": "/app/config.json"
                     }]
                 }
             }],
