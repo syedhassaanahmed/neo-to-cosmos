@@ -71,9 +71,9 @@ docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 `npm start` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. For fresh clean start, do `npm start -- -r`.
 
 ### Docker
-Here is how to run the dockerized version of the tool.
+Here is how to run the containerized version of the tool.
 ```
 docker run -it --rm -v ${pwd}/config.json:/app/config.json syedhassaanahmed/neo2cosmos
 ```
-- `-v ${pwd}/config.json:/app/config.json` volume mounts config file in current directory to the container.
+- `-v ${pwd}/config.json:/app/config.json` takes config file in current directory and volume mounts it inside the container.
 - Add `--network "host"` in order to access local Redis and/or Neo4j.
