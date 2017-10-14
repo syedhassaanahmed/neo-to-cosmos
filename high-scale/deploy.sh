@@ -1,10 +1,10 @@
 # CHANGE THESE VALUES!!!
-INSTANCES=5
+INSTANCES=3
 NEO2COSMOS_NAME=neo2cosmos # This name is used for all resources. Use storage account naming convention!
 NEO2COSMOS_LOCATION=westeurope
-NEO_BOLT=bolt://<BOLT_HOST>:<BOLT_PORT>
+NEO_BOLT=bolt://<BOLT_HOST>:7687
 NEO_USER=neo4j
-NEO_PASS=<NEO4J_PASSWORD>
+NEO_PASS=<NEO4J_PASS>
 
 # Create resource group
 az group create -l $NEO2COSMOS_LOCATION -n $NEO2COSMOS_NAME --debug
@@ -32,6 +32,6 @@ ACI_SHARE=acishare
 az storage share create -n acishare --quota 1 --account-name $NEO2COSMOS_NAME --debug
 az storage file upload --share-name $ACI_SHARE --source config.json --account-name $NEO2COSMOS_NAME --debug
 
-# Deploy N number of Azure container instances with ARM template
+# Deploy N number of Azure container instances with ARM template (config.json is volume mounted)
 az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-aci.json --debug \
     --parameters totalInstances=$INSTANCES storageAccountKey=$STORAGE_KEY shareName=$ACI_SHARE

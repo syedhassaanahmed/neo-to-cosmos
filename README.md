@@ -47,7 +47,7 @@ https://docs.microsoft.com/en-us/azure/cosmos-db/create-graph-dotnet).
 You don't need to create a graph, because the app will do it for you.
 
 ## Configuration
-Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/sampleConfig.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate resume scenario.
+Before you run the app, you'll need to create `config.json` file with [this schema](https://github.com/syedhassaanahmed/neo-to-cosmos/blob/master/high-scale/config.template.json). The config contains settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate resume scenario.
 
 ### Step 1: Get Your Cosmos DB Endpoint.
 <img src="images/azure-cosmos-keys.png"/>
@@ -73,7 +73,7 @@ docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 ### Docker
 Here is how to run the dockerized version of the tool.
 ```
-docker run -it --rm --network "host" -v ${pwd}/config.json:/app/config.json syedhassaanahmed/neo2cosmos
+docker run -it --rm -v ${pwd}/config.json:/app/config.json syedhassaanahmed/neo2cosmos
 ```
-- `-v ${pwd}/config.json:/app/config.json` mounts config file into the container.
-- `--network "host"` allows us to access local Redis and Neo4j using `localhost`.
+- `-v ${pwd}/config.json:/app/config.json` volume mounts config file in current directory to the container.
+- Add `--network "host"` in order to access local Redis and/or Neo4j.

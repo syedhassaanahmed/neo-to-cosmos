@@ -24,7 +24,7 @@
                 "sku": {
                     "name": "Basic",
                     "family": "C",
-                    "capacity": 1
+                    "capacity": 0
                 }
             }
         },

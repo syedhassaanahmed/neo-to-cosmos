@@ -4,7 +4,9 @@
     "parameters": {
         "totalInstances": {
             "type": "int",
-            "defaultValue": 1
+            "defaultValue": 1,
+            "minValue": 1,
+            "maxValue": 800
         },
         "storageAccountKey": {
             "type": "securestring"
@@ -33,7 +35,7 @@
                     "resources": {
                         "requests": {
                             "cpu": 1,
-                            "memoryInGb": 1.5
+                            "memoryInGb": 0.3
                         }
                     },
                     "environmentVariables": [{

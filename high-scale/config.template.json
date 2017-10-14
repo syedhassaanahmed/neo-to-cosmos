@@ -1,0 +1,22 @@
+{
+    "cosmosDB": {
+        "endpoint": "https://${NEO2COSMOS_NAME}.documents.azure.com:443/",
+        "authKey": "${COSMOS_KEY}",
+        "database": "${NEO2COSMOS_NAME}",
+        "collection": "${NEO2COSMOS_NAME}",
+        "offerThroughput": "10000"
+    },
+    "neo4j": {
+        "bolt": "${NEO_BOLT}",
+        "user": "${NEO_USER}",
+        "pass": "${NEO_PASS}"
+    },
+    "redis": {
+        "host": "${NEO2COSMOS_NAME}.redis.cache.windows.net",
+        "port": "6380",
+        "pass": "${REDIS_KEY}",
+        "ssl": true
+    },
+    "pageSize": 1000,
+    "threadCount": 1000
+}
