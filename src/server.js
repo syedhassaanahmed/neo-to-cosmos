@@ -54,13 +54,9 @@ const migrateData = async() => {
     await handleRestart()
     await cosmos.createCollectionIfNeeded()
 
-    await neo.initialize()
-
     await distributeLoad()
     await createVertexes()
     await createEdges()
-
-    await neo.close()
 }
 
 const handleRestart = async() => {
