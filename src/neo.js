@@ -17,24 +17,24 @@ export default function (config) {
     }
 
     module.getTotalNodes = async() => {
-        return await executeCypher('MATCH (n) RETURN COUNT(n)', 
+        return await executeCypher('MATCH (n) RETURN COUNT(n)',
             result => result.records[0].get(0))
     }
 
     module.getTotalRelationships = async() => {
-        return await executeCypher('MATCH (a)-[r]->(b) RETURN COUNT(r)', 
+        return await executeCypher('MATCH (a)-[r]->(b) RETURN COUNT(r)',
             result => result.records[0].get(0))
     }
 
     module.getNodes = async index => {
         const nodeQuery = `MATCH (n) RETURN n ORDER BY ID(n) SKIP ${index} LIMIT ${config.pageSize}`
-        return await executeCypher(nodeQuery, 
+        return await executeCypher(nodeQuery,
             result => result.records.map(record => record.get('n')))
     }
 
     module.getRelationships = async index => {
         const relationshipQuery = `MATCH (a)-[r]->(b) RETURN r ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
-        return await executeCypher(relationshipQuery, 
+        return await executeCypher(relationshipQuery,
             result => result.records.map(record => record.get('r')))
     }
 
