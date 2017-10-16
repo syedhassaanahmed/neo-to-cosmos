@@ -83,14 +83,14 @@ const distributeLoad = async() => {
     log.info(`nodeIndex = ${startNodeIndex}, relationshipIndex = ${startRelationshipIndex}`)
 }
 
-const nodeIndexKey = 'nodeIndex_' + args.instance
+const nodeIndexKey = `nodeIndex_${args.instance}`
 const createVertexes = async() => {
     const indexString = await cache.get(nodeIndexKey)
     let index = indexString ? Number.parseInt(indexString) : startNodeIndex
     let nodes = []
 
     while (true) {
-        log.info('Node: ' + index)
+        log.info(`Node: ${index}`)
 
         nodes = await neo.getNodes(index)
         if (nodes.length === 0)
@@ -100,7 +100,7 @@ const createVertexes = async() => {
             const cacheKey = node.identity.toString()
 
             if (await cache.exists(cacheKey)) {
-                log.info(`Skipping Node ${cacheKey}`)
+                log.info(`Skipping Node ${cacheKey}...`)
             } else {
                 await cosmos.executeGremlin(toGremlinVertex(node))
                 cache.set(cacheKey, '')
@@ -122,8 +122,11 @@ const toGremlinVertex = node => {
     vertex += `.property('id', '${node.identity}')`
 
     for (const key of Object.keys(node.properties)) {
-        const propValue = getPropertyValue(node.properties[key])
-        vertex += `.property('${key}', '${propValue}')`
+        // some Neo4j datasets have 'id' as a property in addition to node.id()
+        if (key.toLowerCase() !== 'id') {
+            const propValue = getPropertyValue(node.properties[key])
+            vertex += `.property('${key}', '${propValue}')`
+        }
     }
 
     return vertex
@@ -137,14 +140,14 @@ const getPropertyValue = property => {
         .replace(/"/g, '\"')
 }
 
-const relationshipIndexKey = 'relationshipIndex_' + args.instance
+const relationshipIndexKey = `relationshipIndex_${args.instance}`
 const createEdges = async() => {
     const indexString = await cache.get(relationshipIndexKey)
     let index = indexString ? Number.parseInt(indexString) : startRelationshipIndex
     let relationships = []
 
     while (true) {
-        log.info('Relationship: ' + index)
+        log.info(`Relationship: ${index}`)
 
         relationships = await neo.getRelationships(index)
         if (relationships.length === 0)
@@ -154,7 +157,7 @@ const createEdges = async() => {
             const cacheKey = `${relationship.start}_${relationship.type}_${relationship.end}`
 
             if (await cache.exists(cacheKey)) {
-                log.info(`Skipping Relationship ${cacheKey}`)
+                log.info(`Skipping Relationship ${cacheKey}...`)
             } else {
                 await cosmos.executeGremlin(toGremlinEdge(relationship))
                 cache.set(cacheKey, '')
@@ -182,7 +185,8 @@ const toGremlinEdge = relationship => {
     return edge
 }
 
-migrateData().then(_ => process.exit()).catch(error => {
-    log.error(error)
-    process.exit()
-})
+migrateData().then(_ => log.info(`Migration completed for instance ${args.instance}.`))
+    .catch(error => {
+        log.error(error)
+        process.exit()
+    })
