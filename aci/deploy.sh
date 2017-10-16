@@ -10,7 +10,7 @@ NEO_PASS=<NEO4J_PASS>
 az group create -l $NEO2COSMOS_LOCATION -n $NEO2COSMOS_NAME --debug
 
 # Deploy Cosmos, Redis and Storage Account with ARM template
-#az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-resources.json --debug
+az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-resources.json --debug
 
 # Fetch auth keys
 COSMOS_KEY=$(az cosmosdb list-keys -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME -o tsv | cut -f1)
