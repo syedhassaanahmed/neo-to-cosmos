@@ -1,7 +1,9 @@
 # neo-to-cosmos
 [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo2cosmos.svg)](https://hub.docker.com/r/syedhassaanahmed/neo2cosmos/)
 
-This app takes a Neo4j database snapshot and copies all contents to an Azure Cosmos DB database using Graph (gremlin) API.
+This app takes a Neo4j database snapshot and copies all contents to an Azure Cosmos DB database using Graph (gremlin) API. 
+
+**Note:** For large volume of data, we recommend using containerized version of the app and [scaling it out with Azure Container Instances](https://github.com/syedhassaanahmed/neo-to-cosmos/tree/master/aci).
 
 ## Credits
 This is an x-plat continuation of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos).
