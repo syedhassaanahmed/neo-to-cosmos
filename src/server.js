@@ -69,7 +69,9 @@ const handleRestart = async() => {
 }
 
 let startNodeIndex = 0,
-    startRelationshipIndex = 0
+    startRelationshipIndex = 0,
+    endNodeIndex = 0,
+    endRelationshipIndex = 0
 
 const distributeLoad = async() => {
     const totalNodes = await neo.getTotalNodes()
@@ -80,7 +82,11 @@ const distributeLoad = async() => {
     startNodeIndex = Math.floor(totalNodes / args.total) * args.instance
     startRelationshipIndex = Math.floor(totalRelationships / args.total) * args.instance
 
-    log.info(`nodeIndex = ${startNodeIndex}, relationshipIndex = ${startRelationshipIndex}`)
+    endNodeIndex = Math.ceil(totalNodes / args.total) * (args.instance + 1)
+    endRelationshipIndex = Math.ceil(totalRelationships / args.total) * (args.instance + 1)
+
+    log.info(`startNodeIndex = ${startNodeIndex}, startRelationshipIndex = ${startRelationshipIndex}`)
+    log.info(`endNodeIndex = ${endNodeIndex}, endRelationshipIndex = ${endRelationshipIndex}`)
 }
 
 const nodeIndexKey = `nodeIndex_${args.instance}`
@@ -93,7 +99,7 @@ const createVertexes = async() => {
         log.info(`Node: ${index}`)
 
         nodes = await neo.getNodes(index)
-        if (nodes.length === 0)
+        if (nodes.length === 0 || index > endNodeIndex)
             break
 
         const promises = nodes.map(node => async() => {
@@ -150,7 +156,7 @@ const createEdges = async() => {
         log.info(`Relationship: ${index}`)
 
         relationships = await neo.getRelationships(index)
-        if (relationships.length === 0)
+        if (relationships.length === 0 || index > endRelationshipIndex)
             break
 
         const promises = relationships.map(relationship => async() => {

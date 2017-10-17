@@ -44,7 +44,7 @@ or
 Walkthrough enough to completely load the data. Be careful... last step of the movie-graph will have you deleting all your new data!
 
 ## Get Your Cosmos DB ready
-If you don't have Cosmos DB set up yet, head over to Azure Cosmos DB documentation and follow the instructions to [Create a Database Account](
+If you don't have Cosmos DB set up yet, head over to this documentation and follow the instructions to [Create a Database Account](
 https://docs.microsoft.com/en-us/azure/cosmos-db/create-graph-dotnet).
 You don't need to create a graph, because the app will do it for you.
 
@@ -54,11 +54,11 @@ Before you run the app, you'll need to create `config.json` file with [this sche
 ### Step 1: Get Your Cosmos DB Endpoint.
 <img src="images/azure-cosmos-keys.png"/>
 
-Select the Keys tab of your Azure Cosmos DB account you'll see the "URI"...copy that value to  `cosmosDb.endpoint`.
+Select the Keys tab of your Cosmos DB account and you'll see the "URI". Copy that value to  `cosmosDb.endpoint`.
 
 ### Step 2: Get Your Cosmos DB AuthKey.
 Either primary or secondary key can be used as `cosmosDb.authKey`
-> Hint: Use the copy button...its way easier than trying to select it with a mouse.
+> Hint: Use the copy button. Its way easier than trying to select it with a mouse!!!
 
 ### Step 3: Neo4j config
 If you used the defaults, you should only need to set `neo4j.pass` to whatever you changed it to when you first logged in.
