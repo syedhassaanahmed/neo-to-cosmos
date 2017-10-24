@@ -34,8 +34,13 @@ export default function (config, log) {
         }
 
         try {
+            // Lazy indexing boosts the write performance and lowers RU charge of each insert 
+            // and is ideal for bulk ingestion scenarios for primarily read-heavy collections
             await documentClient.createCollectionAsync(databaseLink, {
-                id: config.cosmosDB.collection
+                id: config.cosmosDB.collection,
+                indexingPolicy: {
+                    indexingMode: 'lazy'
+                }
             }, {
                 offerThroughput: config.cosmosDB.offerThroughput
             })
