@@ -14,11 +14,8 @@
     "argparse": "^1.0.9",
     "bluebird": "^3.5.1",
     "documentdb-q-promises": "^1.6.0",
-    "gremlin": "^2.6.0",
-    "jsesc": "^2.5.1",
     "log": "^1.4.0",
     "neo4j-driver": "^1.4.1",
-    "promise-parallel-throttle": "^3.0.0",
     "redis": "^2.8.0",
     "uuid": "^3.1.0"
   },

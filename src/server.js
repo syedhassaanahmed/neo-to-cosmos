@@ -1,9 +1,7 @@
-import * as throttle from 'promise-parallel-throttle'
 import Log from 'log'
 import Cosmos from './cosmos.js'
 import Neo from './neo.js'
 import Cache from './cache.js'
-import jsesc from 'jsesc'
 import uuidv4 from 'uuid/v4'
 import {
     ArgumentParser
@@ -41,7 +39,6 @@ const args = argsParser.parseArgs()
 const config = require(args.config)
 config.logLevel = config.logLevel || 'info'
 config.pageSize = config.pageSize || 100
-config.threadCount = config.threadCount || 1
 
 const log = new Log(config.logLevel)
 log.info(args)
@@ -117,26 +114,34 @@ const toDocumentDBVertex = node => {
         label: node.labels[0]
     }
 
-    for (const key of Object.keys(node.properties)) {
-        // some Neo4j datasets have 'id' as a property in addition to node.id()
-        if (key.toLowerCase() !== 'id') {
-            const propValue = getPropertyValue(node.properties[key])
-            vertex[key] = [{
-                id: uuidv4(),
-                _value: propValue
-            }]
-        }
-    }
-
+    addProperties(vertex, node.properties)
     return vertex
 }
 
-const getPropertyValue = property => {
-    return jsesc(property.toString())
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, '\\\'')
-        .replace(/`/g, '\`')
-        .replace(/"/g, '\"')
+const addProperties = (propertyBag, properties) => {
+    for (const key of Object.keys(properties)) {
+        // Some Neo4j datasets have 'id' as a property in addition to node.id()
+        if (key.toLowerCase() === 'id')
+            continue
+
+        const propertyValues = properties[key]
+        propertyBag[key] = []
+
+        // Sometimes the value is itself an array
+        if (Array.isArray(propertyValues)) {
+            for (const propertyValue of propertyValues)
+                addPropertyValue(propertyBag[key], propertyValue)
+        } else {
+            addPropertyValue(propertyBag[key], propertyValues)
+        }
+    }
+}
+
+const addPropertyValue = (property, propertyValue) => {
+    property.push({
+        id: uuidv4(),
+        _value: propertyValue
+    })
 }
 
 const relationshipIndexKey = `relationshipIndex_${args.instance}`
@@ -152,35 +157,25 @@ const createEdges = async() => {
         if (relationships.length === 0 || index > endRelationshipIndex)
             break
 
-        const promises = relationships.map(relationship => async() => {
-            const cacheKey = `${relationship.start}_${relationship.type}_${relationship.end}`
-
-            if (await cache.exists(cacheKey)) {
-                log.info(`Skipping Relationship ${cacheKey}...`)
-            } else {
-                await cosmos.executeGremlin(toGremlinEdge(relationship))
-                cache.set(cacheKey, '')
-            }
-        })
-
-        await throttle.all(promises, {
-            maxInProgress: config.threadCount, // we get 'Request rate is large' if this value is too big
-            failFast: true
-        })
+        const documentEdges = relationships.map(relationship => toDocumentDBEdge(relationship))
+        await cosmos.bulkImport(documentEdges)
 
         index += config.pageSize
         cache.set(relationshipIndexKey, index)
     }
 }
 
-const toGremlinEdge = relationship => {
-    let edge = `g.V('${relationship.start}')`
-    edge += `.addE('${relationship.type}')`
-    for (const key of Object.keys(relationship.properties)) {
-        const propValue = getPropertyValue(relationship.properties[key])
-        edge += `.property('${key}', '${propValue}')`
+const toDocumentDBEdge = relationship => {
+    let edge = {
+        label: relationship.r.type,
+        _isEdge: true,
+        _vertexId: relationship.r.start.toString(),
+        _vertexLabel: relationship.a,
+        _sink: relationship.r.end.toString(),
+        _sinkLabel: relationship.b
     }
-    edge += `.to(g.V('${relationship.end}'))`
+
+    addProperties(edge, relationship.r.properties)
     return edge
 }
 

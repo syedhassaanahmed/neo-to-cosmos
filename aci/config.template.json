@@ -17,6 +17,5 @@
         "pass": "${REDIS_KEY}",
         "ssl": true
     },
-    "pageSize": 1000,
-    "threadCount": 1000
+    "pageSize": 1000
 }

@@ -1,10 +1,6 @@
 import {
-    createClient
-} from 'gremlin'
-import {
     DocumentClientWrapper as DocumentClient
 } from 'documentdb-q-promises'
-import url from 'url'
 import util from 'util'
 import bulkImportSproc from './bulkImport.js'
 
@@ -56,10 +52,12 @@ export default function (config, log) {
 
     const createStoredProcedure = async() => {
         try {
-            await documentClient.createStoredProcedureAsync(collectionLink, bulkImportSproc)
+            await documentClient.deleteStoredProcedureAsync(collectionLink, bulkImportSproc)
         } catch (err) {
-            log.info(`Sproc '${bulkImportSproc.id}' already exists`)
+            log.info(`Sproc '${bulkImportSproc.id}' does not exist`)
         }
+
+        await documentClient.createStoredProcedureAsync(collectionLink, bulkImportSproc)
     }
 
     module.bulkImport = async docs => {
@@ -67,41 +65,6 @@ export default function (config, log) {
 
         // Sprocs don't support array arguments so we have to wrap it in an object
         await documentClient.executeStoredProcedureAsync(bulkImportSprocLink, {docs})
-    }
-
-    const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com',
-        '.graphs.azure.com')
-
-    const gremlinClient = createClient(443, graphEndpoint, {
-        'session': true,
-        'ssl': true,
-        'user': '/' + collectionLink,
-        'password': config.cosmosDB.authKey
-    })
-
-    module.executeGremlin = query => {
-        log.debug(query)
-
-        const promise = new Promise((resolve, reject) =>
-            gremlinClient.execute(query,
-                async(err, results) => {
-                    if (err && !err.message.includes('Resource with specified id or name already exists')) {
-
-                        //Retry in case of RU throttle
-                        if (err.message.includes('Request rate is large')) {
-                            log.debug('Request rate is large, retrying...')
-                            await module.executeGremlin(query)
-                        } else {
-                            reject(err)
-                            return
-                        }
-                    }
-
-                    resolve(results)
-                },
-            ))
-
-        return promise
     }
 
     return module

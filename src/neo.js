@@ -33,9 +33,15 @@ export default function (config) {
     }
 
     module.getRelationships = async index => {
-        const relationshipQuery = `MATCH (a)-[r]->(b) RETURN r ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
+        const relationshipQuery = `MATCH (a)-[r]->(b) RETURN labels(a), r, labels(b) ORDER BY ID(r) SKIP ${index} LIMIT ${config.pageSize}`
         return await executeCypher(relationshipQuery,
-            result => result.records.map(record => record.get('r')))
+            result => result.records.map(record => {
+                return {
+                    a: record.get('labels(a)')[0],
+                    r: record.get('r'),
+                    b: record.get('labels(b)')[0]
+                }
+            }))
     }
 
     return module

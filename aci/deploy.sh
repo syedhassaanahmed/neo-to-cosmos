@@ -1,16 +1,16 @@
 # CHANGE THESE VALUES!!!
 INSTANCES=5
-NEO2COSMOS_NAME=neo2cosmos # This name is used for all resources. Use storage account naming convention!
+NEO2COSMOS_NAME=syahneo2cosmos # This name is used for all resources. Use storage account naming convention!
 NEO2COSMOS_LOCATION=westeurope
-NEO_BOLT=bolt://<NEO4J_BOLT>:7687
+NEO_BOLT=bolt://13.81.53.236:7687
 NEO_USER=neo4j
-NEO_PASS=<NEO4J_PASS>
+NEO_PASS=syah-neo4j
 
 # Create resource group
 az group create -l $NEO2COSMOS_LOCATION -n $NEO2COSMOS_NAME --debug
 
 # Deploy Cosmos, Redis and Storage Account with ARM template
-az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-resources.json --debug
+#az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-resources.json --debug
 
 # Fetch auth keys
 COSMOS_KEY=$(az cosmosdb list-keys -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME -o tsv | cut -f1)
