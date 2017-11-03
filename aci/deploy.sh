@@ -1,20 +1,36 @@
-# CHANGE THESE VALUES!!!
-INSTANCES=5
-NEO2COSMOS_NAME=syahneo2cosmos # This name is used for all resources. Use storage account naming convention!
-NEO2COSMOS_LOCATION=westeurope
-NEO_BOLT=bolt://13.81.53.236:7687
-NEO_USER=neo4j
-NEO_PASS=syah-neo4j
+if [ -z "$1" ]; then echo "Number of instances was not supplied"; exit 1; fi
+INSTANCES=$1
+
+if [ -z "$2" ]; then echo "Name was not supplied"; exit 1; fi
+NEO2COSMOS_NAME=$2 # This name is used for all resources. Use storage account naming convention!
+
+if [ -z "$3" ]; then echo "Location was not supplied"; exit 1; fi
+NEO2COSMOS_LOCATION=$3
+
+if [ -z "$4" ]; then echo "Bolt url was not supplied"; exit 1; fi
+NEO_BOLT=$4
+
+if [ -z "$5" ]; then echo "Neo4J username was not supplied"; exit 1; fi
+NEO_USER=$5
+
+read -s -p "Neo4J Password:" NEO_PASS
+echo
+
+# Login if necessary
+if [[ $(az account show) != *tenantId* ]]; then az login; fi
+
+# Select Azure subscription if you have multiple of them
+# az account set --subscription <SUBSCRIPTION_ID>
 
 # Create resource group
 az group create -l $NEO2COSMOS_LOCATION -n $NEO2COSMOS_NAME --debug
 
 # Deploy Cosmos, Redis and Storage Account with ARM template
-#az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-resources.json --debug
+az group deployment create -g $NEO2COSMOS_NAME --template-file deploy-resources.json --debug
 
 # Fetch auth keys
-COSMOS_KEY=$(az cosmosdb list-keys -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME -o tsv | cut -f1)
-REDIS_KEY=$(az redis list-keys -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME -o tsv | cut -f1)
+COSMOS_KEY=$(az cosmosdb list-keys -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME --query "primaryMasterKey" -o tsv)
+REDIS_KEY=$(az redis list-keys -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME --query "primaryKey" -o tsv)
 STORAGE_KEY=$(az storage account keys list -n $NEO2COSMOS_NAME -g $NEO2COSMOS_NAME --query "[0].value" -o tsv)
 
 # Create config.json from template (use comma as sed expression separator because of urls)
