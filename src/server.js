@@ -4,6 +4,7 @@ import Cosmos from './cosmos.js'
 import Neo from './neo.js'
 import Cache from './cache.js'
 import jsesc from 'jsesc'
+import uuidv4 from 'uuid/v4'
 import {
     ArgumentParser
 } from 'argparse'
@@ -102,36 +103,28 @@ const createVertexes = async() => {
         if (nodes.length === 0 || index > endNodeIndex)
             break
 
-        const promises = nodes.map(node => async() => {
-            const cacheKey = node.identity.toString()
-
-            if (await cache.exists(cacheKey)) {
-                log.info(`Skipping Node ${cacheKey}...`)
-            } else {
-                await cosmos.executeGremlin(toGremlinVertex(node))
-                cache.set(cacheKey, '')
-            }
-        })
-
-        await throttle.all(promises, {
-            maxInProgress: config.threadCount, // we get 'Request rate is large' if this value is too big
-            failFast: true
-        })
+        const documentVertices = nodes.map(node => toDocumentDBVertex(node))
+        await cosmos.bulkImport(documentVertices)
 
         index += config.pageSize
         cache.set(nodeIndexKey, index)
     }
 }
 
-const toGremlinVertex = node => {
-    let vertex = `g.addV('${node.labels[0]}')`
-    vertex += `.property('id', '${node.identity}')`
+const toDocumentDBVertex = node => {
+    let vertex = {
+        id: node.identity.toString(),
+        label: node.labels[0]
+    }
 
     for (const key of Object.keys(node.properties)) {
         // some Neo4j datasets have 'id' as a property in addition to node.id()
         if (key.toLowerCase() !== 'id') {
             const propValue = getPropertyValue(node.properties[key])
-            vertex += `.property('${key}', '${propValue}')`
+            vertex[key] = [{
+                id: uuidv4(),
+                _value: propValue
+            }]
         }
     }
 

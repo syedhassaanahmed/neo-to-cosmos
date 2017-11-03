@@ -5,6 +5,8 @@ import {
     DocumentClientWrapper as DocumentClient
 } from 'documentdb-q-promises'
 import url from 'url'
+import util from 'util'
+import bulkImportSproc from './bulkImport.js'
 
 export default function (config, log) {
     let module = {}
@@ -15,6 +17,7 @@ export default function (config, log) {
 
     const databaseLink = `dbs/${config.cosmosDB.database}`
     const collectionLink = `${databaseLink}/colls/${config.cosmosDB.collection}`
+    const bulkImportSprocLink = `${collectionLink}/sprocs/${bulkImportSproc.id}`
 
     module.deleteCollection = async() => {
         try {
@@ -47,6 +50,23 @@ export default function (config, log) {
         } catch (err) {
             log.info(`Collection ${config.cosmosDB.collection} already exists`)
         }
+
+        await createStoredProcedure()
+    }
+
+    const createStoredProcedure = async() => {
+        try {
+            await documentClient.createStoredProcedureAsync(collectionLink, bulkImportSproc)
+        } catch (err) {
+            log.info(`Sproc '${bulkImportSproc.id}' already exists`)
+        }
+    }
+
+    module.bulkImport = async docs => {
+        log.debug(util.inspect(docs, false, null))
+
+        // Sprocs don't support array arguments so we have to wrap it in an object
+        await documentClient.executeStoredProcedureAsync(bulkImportSprocLink, {docs})
     }
 
     const graphEndpoint = url.parse(config.cosmosDB.endpoint).hostname.replace('.documents.azure.com',
