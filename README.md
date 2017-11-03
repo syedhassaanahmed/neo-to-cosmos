@@ -10,8 +10,8 @@ This is an x-plat continuation of the great work **Brian Sherwin** has done [in 
 
 ## Disclaimer
 - The app is **NOT intended to run on a live production database**.
-- Due to raw performance and possibility to bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The Document structures for `Vertices` and `Edges` were extracted from [Cosmos DB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) after running [this .NET sample](https://github.com/Azure-Samples/azure-cosmos-db-graph-dotnet-getting-started) which populates Graph data. However since Cosmos DB Graph support is currently in Preview, this internal **structure might change any time, potentially breaking our code**.
-- This project is **NOT supported by Microsoft** in any way and may become non-functional at any time. This is an independent project although we would love if you submit PRs to improve it.
+- Due to the possibility of bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The Document structures for `Vertices` and `Edges` were extracted from [Cosmos DB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) after running [this .NET sample](https://github.com/Azure-Samples/azure-cosmos-db-graph-dotnet-getting-started) which populates Graph data. However since Cosmos DB Graph support is currently in Preview, this internal **structure might change any time, potentially breaking our code**.
+- This project is **NOT supported by Microsoft** in any way. It is an independent effort, although we would love if you submit PRs to improve it.
 
 ## Get Started
 The first thing you'll need is a Neo4j database. Docker is the quickest way to get started!

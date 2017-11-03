@@ -4,13 +4,12 @@ Copying large volume of data from Neo4j to CosmosDB using a single instance of t
 Hence we've created a small script to orchestrate deployment of the required resources (Cosmos DB, Redis and Storage Account), as well as spin up N number of `Azure Container Instances`, each performs a portion of data migration.
 
 ## Prereqs
-- Install [latest Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
-- Make sure your desired subscription is selected with `az account set --subscription <SUBSCRIPTION_ID>`
+Install [latest Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 ## Run the script
 `./deploy.sh 5 neo2cosmos westeurope bolt://<BOLT_ENDPOINT>:7687 neo4j`
 
-> This will deploy 5 container instances, all resources named 'neo2cosmos' in West Europe. It takes ~5-10min to provision all resources for the first time.
+> This will deploy 5 container instances, all resources named 'neo2cosmos' in Western Europe. It takes ~5-10min to provision all resources for the first time.
 
 ## How it works
 Here are the steps we perform;
