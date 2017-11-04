@@ -140,7 +140,7 @@ const addProperties = (propertyBag, properties) => {
 const addPropertyValue = (property, propertyValue) => {
     property.push({
         id: uuidv4(),
-        _value: propertyValue
+        _value: propertyValue.toString()
     })
 }
 
