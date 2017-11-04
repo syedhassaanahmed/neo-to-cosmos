@@ -52,12 +52,10 @@ export default function (config, log) {
 
     const createStoredProcedure = async() => {
         try {
-            await documentClient.deleteStoredProcedureAsync(collectionLink, bulkImportSproc)
+            await documentClient.createStoredProcedureAsync(collectionLink, bulkImportSproc)
         } catch (err) {
-            log.info(`Sproc '${bulkImportSproc.id}' does not exist`)
+            log.info(`Sproc '${bulkImportSproc.id}' already exist`)
         }
-
-        await documentClient.createStoredProcedureAsync(collectionLink, bulkImportSproc)
     }
 
     module.bulkImport = async docs => {
