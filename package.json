@@ -2,7 +2,8 @@
   "name": "neo-to-cosmos",
   "version": "1.0.0",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "npm run build && node dist/server.js",
+    "build": "tsc && tslint -c tslint.json -p tsconfig.json"
   },
   "author": "Syed Hassaan Ahmed",
   "license": "MIT",
@@ -13,22 +14,19 @@
   "dependencies": {
     "argparse": "^1.0.9",
     "bluebird": "^3.5.1",
-    "documentdb-q-promises": "^1.6.0",
-    "log": "^1.4.0",
-    "neo4j-driver": "^1.4.1",
+    "documentdb-typescript": "^1.0.6",
+    "neo4j-driver": "^1.5.0",
     "redis": "^2.8.0",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "winston": "^2.4.0"
   },
   "devDependencies": {
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-register": "^6.26.0"
-  },
-  "babel": {
-    "presets": [
-      "env"
-    ],
-    "sourceMaps": true,
-    "retainLines": true
+    "@types/argparse": "^1.0.33",
+    "@types/bluebird": "^3.5.18",
+    "@types/redis": "^2.8.1",
+    "@types/uuid": "^3.4.3",
+    "@types/winston": "^2.3.7",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.1"
   }
 }

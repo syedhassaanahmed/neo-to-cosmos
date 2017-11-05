@@ -1,46 +1,22 @@
 {
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [{
+            "type": "node",
+            "request": "attach",
+            "name": "Attach",
+            "port": 9229
+        },
         {
-            "name": "Launch",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceRoot}/index.js",
-            "stopOnEntry": false,
-            "args": [],
-            "cwd": "${workspaceRoot}",
-            "preLaunchTask": null,
-            "runtimeExecutable": null,
-            "runtimeArgs": [
-                "--nolazy"
+            "name": "Debug",
+            "program": "${workspaceRoot}/dist/server.js",
+            "smartStep": true,
+            "outFiles": [
+                "../dist/**/*.js"
             ],
-            "env": {
-                "NODE_ENV": "development"
-            },
-            "console": "internalConsole",
-            "sourceMaps": true,
-            "outFiles": []
-        },
-        {
-            "name": "Attach",
-            "type": "node",
-            "request": "attach",
-            "port": 5858,
-            "address": "localhost",
-            "restart": false,
-            "sourceMaps": false,
-            "outFiles": [],
-            "localRoot": "${workspaceRoot}",
-            "remoteRoot": null
-        },
-        {
-            "name": "Attach to Process",
-            "type": "node",
-            "request": "attach",
-            "processId": "${command:PickProcess}",
-            "port": 5858,
-            "sourceMaps": false,
-            "outFiles": []
+            "preLaunchTask": "npm: build",
+            "protocol": "inspector"
         }
     ]
 }

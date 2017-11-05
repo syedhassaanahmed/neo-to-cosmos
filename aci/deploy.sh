@@ -10,10 +10,10 @@ NEO2COSMOS_LOCATION=$3
 if [ -z "$4" ]; then echo "Bolt url was not supplied"; exit 1; fi
 NEO_BOLT=$4
 
-if [ -z "$5" ]; then echo "Neo4J username was not supplied"; exit 1; fi
+if [ -z "$5" ]; then echo "Neo4j username was not supplied"; exit 1; fi
 NEO_USER=$5
 
-read -s -p "Neo4J Password:" NEO_PASS
+read -s -p "Neo4j Password:" NEO_PASS
 echo
 
 # Login if necessary
