@@ -24,12 +24,12 @@ export default class Cosmos {
         this.client.consistencyLevel = "Eventual";
     }
 
-    async initialize() {
+    initialize = async () => {
         await this.client.openAsync();
         this.documentClient = promisifyAll(this.client.documentClient);
     }
 
-    private async createDatabaseIfNeeded() {
+    private createDatabaseIfNeeded = async () => {
         try {
             await this.documentClient.createDatabaseAsync({
                 id: this.config.cosmosDB.database
@@ -39,7 +39,7 @@ export default class Cosmos {
         }
     }
 
-    async createCollectionIfNeeded() {
+    createCollectionIfNeeded = async () => {
         await this.createDatabaseIfNeeded();
 
         try {
@@ -57,7 +57,7 @@ export default class Cosmos {
         this.createStoredProcedureIfNeeded();
     }
 
-    async deleteCollection() {
+    deleteCollection = async () => {
         try {
             await this.documentClient.deleteCollectionAsync(this.collectionLink);
         } catch (err) {
@@ -65,7 +65,7 @@ export default class Cosmos {
         }
     }
 
-    private async createStoredProcedureIfNeeded() {
+    private createStoredProcedureIfNeeded = async () => {
         try {
             await this.documentClient.createStoredProcedureAsync(this.collectionLink, BulkImportSproc);
         } catch (err) {
@@ -73,7 +73,7 @@ export default class Cosmos {
         }
     }
 
-    async bulkImport(docs: any[]) {
+    bulkImport = async (docs: any[]) => {
         // This is to avoid unnecessary serialization of document batches in case of level "info"
         if (this.logger.level === "debug")
             this.logger.debug(JSON.stringify(docs));

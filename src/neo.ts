@@ -10,23 +10,23 @@ export default class Neo {
         this.logger = logger;
     }
 
-    async getTotalNodes() {
+    getTotalNodes = async () => {
         return await this.executeCypher("MATCH (n) RETURN COUNT(n)",
             records => records[0].get(0));
     }
 
-    async getTotalRelationships() {
+    getTotalRelationships = async () => {
         return await this.executeCypher("MATCH (a)-[r]->(b) RETURN COUNT(r)",
             records => records[0].get(0));
     }
 
-    async getNodes(index: number) {
+    getNodes = async (index: number) => {
         const nodeQuery = `MATCH (n) RETURN n ORDER BY ID(n) SKIP ${index} LIMIT ${this.config.pageSize}`;
         return await this.executeCypher(nodeQuery,
             records => records.map(record => record.get("n")));
     }
 
-    async getRelationships(index: number) {
+    getRelationships = async (index: number) => {
         const relationshipQuery = `MATCH (a)-[r]->(b) RETURN labels(a), r, labels(b) ORDER BY ID(r) SKIP ${index} LIMIT ${this.config.pageSize}`;
         return await this.executeCypher(relationshipQuery,
             records => records.map(record => {
@@ -38,7 +38,7 @@ export default class Neo {
             }));
     }
 
-    private async executeCypher(query: string, getResult: (records: Neo4j.Record[]) => any) {
+    private executeCypher = async (query: string, getResult: (records: Neo4j.Record[]) => any) => {
         this.logger.debug(query);
 
         const driver = await Neo4j.driver(this.config.neo4j.bolt,

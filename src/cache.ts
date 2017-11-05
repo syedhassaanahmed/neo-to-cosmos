@@ -23,20 +23,20 @@ export default class Cache {
         }
     }
 
-    async exists(key: string) {
+    exists = async (key: string) => {
         return this.redisClient ? await this.redisClient.existsAsync(key) : false;
     }
 
-    async get(key: string) {
+    get = async (key: string) => {
         return this.redisClient ? await this.redisClient.getAsync(key) : undefined;
     }
 
-    set(key: string, value: string) {
+    set = (key: string, value: string) => {
         if (this.redisClient)
             this.redisClient.set(key, value);
     }
 
-    async flush() {
+    flush = async () => {
         if (this.redisClient)
             await this.redisClient.flushdbAsync();
     }

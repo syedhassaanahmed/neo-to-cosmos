@@ -1,6 +1,6 @@
 import { ArgumentParserOptions, ArgumentParser } from "argparse";
 
-export default function() {
+export default () => {
     const argParseOptions: ArgumentParserOptions = { addHelp: true };
     const argsParser = new ArgumentParser(argParseOptions);
 
@@ -28,4 +28,4 @@ export default function() {
         });
 
     return argsParser.parseArgs();
-}
+};

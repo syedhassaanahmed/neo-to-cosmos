@@ -1,6 +1,6 @@
 import * as Winston from "winston";
 
-export default function(config: any) {
+export default (config: any) => {
     const logger = new (Winston.Logger)({
         level: config.logLevel,
         transports: [
@@ -21,4 +21,4 @@ export default function(config: any) {
 
     logger.info(config);
     return logger;
-}
+};
