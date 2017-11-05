@@ -94,7 +94,7 @@ const toDocumentDBVertex = (node: Neo4j.Node) => {
 };
 
 const addProperties = (propertyBag: any, properties: any) => {
-    for (const key of Object.keys(properties)) {
+    for (const key in properties) {
         // Some Neo4j datasets have "id" as a property in addition to node.id()
         if (key.toLowerCase() === "id")
             continue;
