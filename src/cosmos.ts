@@ -1,33 +1,32 @@
-import * as Winston from "winston";
-import * as DocumentDB from "documentdb-typescript";
-import * as Bluebird from "bluebird";
+import { LoggerInstance } from "winston";
+import { Client } from "documentdb-typescript";
+import { promisifyAll } from "bluebird";
 import * as BulkImportSproc from "./bulkImport.js";
-import * as Util from "util";
 
 export default class Cosmos {
     private readonly config: any;
-    private readonly logger: Winston.LoggerInstance;
+    private readonly logger: LoggerInstance;
 
     private readonly databaseLink: string;
     private readonly collectionLink: string;
 
-    private readonly client: DocumentDB.Client;
+    private readonly client: Client;
     private documentClient: any;
 
-    constructor(config: any, logger: Winston.LoggerInstance) {
+    constructor(config: any, logger: LoggerInstance) {
         this.config = config;
         this.logger = logger;
 
         this.databaseLink = `dbs/${config.cosmosDB.database}`;
         this.collectionLink = `${this.databaseLink}/colls/${config.cosmosDB.collection}`;
 
-        this.client = new DocumentDB.Client(config.cosmosDB.endpoint, config.cosmosDB.authKey);
+        this.client = new Client(config.cosmosDB.endpoint, config.cosmosDB.authKey);
         this.client.consistencyLevel = "Eventual";
     }
 
     async initialize() {
         await this.client.openAsync();
-        this.documentClient = Bluebird.promisifyAll(this.client.documentClient);
+        this.documentClient = promisifyAll(this.client.documentClient);
     }
 
     private async createDatabaseIfNeeded() {
@@ -75,7 +74,10 @@ export default class Cosmos {
     }
 
     async bulkImport(docs: any[]) {
-        this.logger.debug(Util.inspect(docs, false, undefined));
+        // This is to avoid unnecessary serialization of document batches in case of level "info"
+        if (this.logger.level === "debug")
+            this.logger.debug(JSON.stringify(docs));
+
         const bulkImportSprocLink = `${this.collectionLink}/sprocs/${BulkImportSproc.id}`;
 
         // Sprocs don't support array arguments so we have to wrap it in an object

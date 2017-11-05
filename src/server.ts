@@ -1,55 +1,25 @@
-import * as Winston from "winston";
+import Arguments from "./arguments";
+import { LoggerInstance } from "winston";
+import Logger from "./logger";
 import Cosmos from "./cosmos";
-import Neo from "./neo";
 import { v1 as Neo4j } from "neo4j-driver";
+import Neo from "./neo";
 import Cache from "./cache";
 import { v4 as Uuid } from "uuid";
-import * as ArgParse from "argparse";
 
-// Parse cli arguments
-const argParseOptions: ArgParse.ArgumentParserOptions = { addHelp: true };
-const argsParser = new ArgParse.ArgumentParser(argParseOptions);
-argsParser.addArgument(
-    ["-c", "--config"], {
-        defaultValue: "../config.json",
-        help: "Provide path to config.json file"
-    });
-argsParser.addArgument(
-    ["-r", "--restart"], {
-        nargs: 0,
-        help: "Restarts data transfer by deleting Cosmos DB collection and flushing Redis cache"
-    });
-argsParser.addArgument(
-    ["-t", "--total"], {
-        defaultValue: 1,
-        type: "int",
-        help: "Total number of instances in case of distributed load"
-    });
-argsParser.addArgument(
-    ["-i", "--instance"], {
-        defaultValue: 0,
-        type: "int",
-        help: "Instance ID in case of distributed load"
-    });
-const args = argsParser.parseArgs();
+const args = Arguments();
 
 // Set config defaults
 const config = require(args.config);
 config.logLevel = config.logLevel || "info";
 config.pageSize = config.pageSize || 100;
 
-const logger = new (Winston.Logger)({
-    level: config.logLevel,
-    transports: [
-        new (Winston.transports.Console)(),
-        new (Winston.transports.File)({ filename: "neo2cosmos.log" })
-    ]
-});
+// Create Logger
+const logger: LoggerInstance = Logger(config);
 logger.info(args);
-logger.info(config);
 
 const cosmos = new Cosmos(config, logger);
-const neo = new Neo(config);
+const neo = new Neo(config, logger);
 const cache = new Cache(config);
 
 const migrateData = async () => {

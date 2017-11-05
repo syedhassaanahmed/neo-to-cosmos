@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Copy Neo4j data to Azure Cosmos DB",
   "scripts": {
-    "start": "npm run build && node dist/server.js",
+    "start": "npm run build && mkdirp logs && node dist/server.js",
     "build": "tsc && tslint -c tslint.json -p tsconfig.json"
   },
   "author": "Syed Hassaan Ahmed",
@@ -27,6 +27,7 @@
     "@types/redis": "^2.8.1",
     "@types/uuid": "^3.4.3",
     "@types/winston": "^2.3.7",
+    "mkdirp": "^0.5.1",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1"
   }

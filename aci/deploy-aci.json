@@ -6,7 +6,7 @@
             "type": "int",
             "defaultValue": 1,
             "minValue": 1,
-            "maxValue": 800
+            "maxValue": 20
         },
         "storageAccountKey": {
             "type": "securestring"

@@ -1,5 +1,5 @@
-import * as Redis from "redis";
-import * as Bluebird from "bluebird";
+import { ClientOpts, createClient } from "redis";
+import { promisifyAll } from "bluebird";
 
 export default class Cache {
     private readonly config: any;
@@ -9,7 +9,7 @@ export default class Cache {
         this.config = config;
 
         if (config.redis) {
-            const redisOptions: Redis.ClientOpts = {
+            const redisOptions: ClientOpts = {
                 auth_pass: config.redis.pass
             };
             if (config.redis.ssl) {
@@ -18,7 +18,7 @@ export default class Cache {
                 };
             }
 
-            this.redisClient = Bluebird.promisifyAll(Redis.createClient(
+            this.redisClient = promisifyAll(createClient(
                 config.redis.port, config.redis.host, redisOptions));
         }
     }

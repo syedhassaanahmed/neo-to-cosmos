@@ -1,10 +1,13 @@
+import { LoggerInstance } from "winston";
 import { v1 as Neo4j } from "neo4j-driver";
 
 export default class Neo {
     private readonly config: any;
+    private readonly logger: LoggerInstance;
 
-    constructor(config: any) {
+    constructor(config: any, logger: LoggerInstance) {
         this.config = config;
+        this.logger = logger;
     }
 
     async getTotalNodes() {
@@ -36,6 +39,8 @@ export default class Neo {
     }
 
     private async executeCypher(query: string, getResult: (records: Neo4j.Record[]) => any) {
+        this.logger.debug(query);
+
         const driver = await Neo4j.driver(this.config.neo4j.bolt,
             Neo4j.auth.basic(this.config.neo4j.user, this.config.neo4j.pass));
 
