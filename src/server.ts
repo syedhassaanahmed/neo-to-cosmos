@@ -1,9 +1,9 @@
-import * as Winston from "Winston";
+import * as Winston from "winston";
 import Cosmos from "./cosmos";
 import Neo from "./neo";
 import { v1 as Neo4j } from "neo4j-driver";
 import Cache from "./cache";
-import { v4 as uuid } from "uuid";
+import { v4 as Uuid } from "uuid";
 import * as ArgParse from "argparse";
 
 // Parse cli arguments
@@ -12,7 +12,7 @@ const argsParser = new ArgParse.ArgumentParser(argParseOptions);
 argsParser.addArgument(
     ["-c", "--config"], {
         defaultValue: "../config.json",
-        help: 'Provide config json file relative to the "src" folder'
+        help: "Provide path to config.json file"
     });
 argsParser.addArgument(
     ["-r", "--restart"], {
@@ -125,7 +125,7 @@ const toDocumentDBVertex = (node: Neo4j.Node) => {
 
 const addProperties = (propertyBag: any, properties: any) => {
     for (const key of Object.keys(properties)) {
-        // Some Neo4j datasets have 'id' as a property in addition to node.id()
+        // Some Neo4j datasets have "id" as a property in addition to node.id()
         if (key.toLowerCase() === "id")
             continue;
 
@@ -144,7 +144,7 @@ const addProperties = (propertyBag: any, properties: any) => {
 
 const addPropertyValue = (property: any[], propertyValue: any) => {
     property.push({
-        id: uuid(),
+        id: Uuid(),
         _value: propertyValue.toString()
     });
 };

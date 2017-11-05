@@ -1,6 +1,9 @@
 node_modules
+Dockerfile
 *.log
+*.md
 images
 aci
 dist
 config.json
+LICENSE

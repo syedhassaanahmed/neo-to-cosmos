@@ -1,4 +1,4 @@
-import * as Winston from "Winston";
+import * as Winston from "winston";
 import * as DocumentDB from "documentdb-typescript";
 import * as Bluebird from "bluebird";
 import * as BulkImportSproc from "./bulkImport.js";
