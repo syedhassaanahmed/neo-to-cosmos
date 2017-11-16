@@ -37,7 +37,7 @@
                             "cpu": 1,
                             "memoryInGb": 0.3
                         }
-                    },
+                    },                    
                     "environmentVariables": [{
                             "name": "TOTAL",
                             "value": "[parameters('totalInstances')]"
@@ -58,6 +58,7 @@
                 }
             }],
             "osType": "Linux",
+            "restartPolicy": "OnFailure",
             "volumes": [{
                 "name": "config-volume",
                 "azureFile": {
