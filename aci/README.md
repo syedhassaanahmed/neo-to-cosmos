@@ -1,7 +1,7 @@
 # Scaling out Neo2Cosmos with Azure Container Instances
 Copying large volume of data from Neo4j to CosmosDB using a single instance of the app may not be entirely feasible, even with maxed out [RUs](https://docs.microsoft.com/en-us/azure/cosmos-db/request-units) and a Redis layer in between.
 
-Hence we've created a small script to orchestrate deployment of the required resources (Cosmos DB, Redis and Storage Account), as well as spin up N number of `Azure Container Instances`, each performs a portion of data migration. Container instances are billed by the second and you're charged only for the compute used while the migration task is running.
+Hence we've created a small script to orchestrate deployment of the required resources (Cosmos DB, Redis and Storage Account), as well as spin up N number of `Azure Container Instances`, each performs a portion of data migration. Container instances are perfect for our scenario as they're billed by the second and you're charged only for compute used while the migration task is running.
 
 ## Prereqs
 Install [latest Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
