@@ -156,8 +156,10 @@ const toDocumentDBEdge = (relationship: any) => {
     return edge;
 };
 
-migrateData().then(_ => logger.info(`Migration completed for instance ${args.instance}`))
-    .catch(error => {
-        logger.error(error);
-        process.exit();
-    });
+migrateData().then(_ => {
+    logger.info(`Migration completed for instance ${args.instance}`);
+    process.exit();
+}).catch(error => {
+    logger.error(error);
+    process.exit();
+});
