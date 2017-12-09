@@ -1,3 +1,5 @@
+#!/bin/bash
+
 if [ -z "$1" ]; then echo "Number of instances was not supplied"; exit 1; fi
 INSTANCES=$1
 
