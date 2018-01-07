@@ -10,15 +10,15 @@ This is an x-plat continuation of the great work **Brian Sherwin** has done [in 
 
 ## Disclaimer
 - The app is **NOT intended to run on a live production database**.
-- Due to the possibility of bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The Document structures for `Vertices` and `Edges` were extracted from [Cosmos DB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) after running [this .NET sample](https://github.com/Azure-Samples/azure-cosmos-db-graph-dotnet-getting-started) which populates Graph data. However since Cosmos DB Graph support is currently in Preview, this internal **structure might change any time, potentially breaking our code**.
-- This project is **NOT supported by Microsoft** in any way. It is an independent effort, although we would love if you submit PRs to improve it.
+- Due to the possibility of bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The Document structures for `Vertices` and `Edges` were extracted from [Cosmos DB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) after running [this .NET sample](https://github.com/Azure-Samples/azure-cosmos-db-graph-dotnet-getting-started) which populates Graph data.
+- This project is **NOT officially supported by Microsoft** in any way. It is an independent effort, although we would love if you submit PRs to improve it.
 
 ## Get Started
 The first thing you'll need is a Neo4j database. Docker is the quickest way to get started!
 
 If you're on Windows, make sure you've configured Hyper-V, and installed [Docker for Windows](https://docs.docker.com/docker-for-windows/). Also make sure to use Linux containers.
 
-Once you have that running, spin up a copy of Neo4j:
+Once you have Docker up and running, spin up a copy of Neo4j:
 
 ```
 docker run --name neo2cosmos-neo4j -p 7474:7474 -p 7687:7687 -v $HOME/neo4j/data:/data -d neo4j
