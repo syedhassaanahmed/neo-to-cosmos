@@ -10,9 +10,9 @@ This is an x-plat continuation of the great work **Brian Sherwin** has done [in 
 
 ## Disclaimer
 - The app is **NOT intended to synchronize a live production database**.
-- Node or Relationship property names which are [system reserved in Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources#system-vs-user-defined-resources) will be appended with `_prop`. `id` will become `id_prop`.
-- Due to the possibility of bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The Document structures for `Vertices` and `Edges` were extracted from [Cosmos DB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) after running [this .NET sample](https://github.com/Azure-Samples/azure-cosmos-db-graph-dotnet-getting-started) which populates Graph data.
-- This project is **NOT officially supported by Microsoft** in any way. It is an independent effort, although we would love if you submit PRs to improve it.
+- Node or Relationship property names which are [system reserved in Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources#system-vs-user-defined-resources) will be appended with `_prop`, i.e. `id` will become `id_prop`.
+- Due to the possibility of bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The internal JSON Document representation of `Vertices` and `Edges` is [explained in detail here](https://vincentlauzon.com/2017/09/05/hacking-accessing-a-graph-in-cosmos-db-with-sql-documentdb-api/).
+- This project is **NOT officially supported by Microsoft**. It is an independent effort, although we appreciate you to submit PRs to improve it.
 
 ## Get Started
 The first thing you'll need is a Neo4j database. Docker is the quickest way to get started!
