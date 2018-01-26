@@ -93,13 +93,14 @@ const toDocumentDBVertex = (node: Neo4j.Node) => {
     return vertex;
 };
 
+const systemProperties = ["id", "_rid", "_self", "_ts", "_etag"];
 const addProperties = (propertyBag: any, properties: any) => {
-    for (const key in properties) {
-        // Some Neo4j datasets have "id" as a property in addition to node.id()
-        if (key.toLowerCase() === "id")
-            continue;
-
+    for (let key in properties) {
         const propertyValues = properties[key];
+
+        if (systemProperties.indexOf(key.toLowerCase()) > -1)
+            key += "_prop";
+
         propertyBag[key] = [];
 
         // Sometimes the value is itself an array

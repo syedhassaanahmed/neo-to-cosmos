@@ -9,7 +9,8 @@ This app takes a Neo4j database snapshot and copies all contents to an Azure Cos
 This is an x-plat continuation of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos).
 
 ## Disclaimer
-- The app is **NOT intended to run on a live production database**.
+- The app is **NOT intended to synchronize a live production database**.
+- Node or Relationship property names which are [system reserved in Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources#system-vs-user-defined-resources) will be appended with `_prop`. `id` will become `id_prop`.
 - Due to the possibility of bulk import using Stored Procedures, `DocumentDB` APIs were preferred over `Gremlin`. The Document structures for `Vertices` and `Edges` were extracted from [Cosmos DB Emulator](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator) after running [this .NET sample](https://github.com/Azure-Samples/azure-cosmos-db-graph-dotnet-getting-started) which populates Graph data.
 - This project is **NOT officially supported by Microsoft** in any way. It is an independent effort, although we would love if you submit PRs to improve it.
 
