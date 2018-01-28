@@ -159,7 +159,7 @@ const toDocumentDBEdge = (relationship: any) => {
 
 const addEdgeProperties = (propertyBag: any, properties: any) => {
     for (let key in properties) {
-        const propertyValue = properties[key];
+        const propertyValue = properties[key].toString();
 
         if (systemProperties.indexOf(key.toLowerCase()) > -1)
             key += "_prop";

@@ -16,7 +16,7 @@ export default class Neo {
     }
 
     getTotalRelationships = async () => {
-        return await this.executeCypher("MATCH (a)-[r]->(b) RETURN COUNT(r)",
+        return await this.executeCypher("MATCH ()-[r]->() RETURN COUNT(r)",
             records => records[0].get(0));
     }
 
