@@ -89,12 +89,12 @@ const toDocumentDBVertex = (node: Neo4j.Node) => {
         label: node.labels[0]
     };
 
-    addProperties(vertex, node.properties);
+    addVertexProperties(vertex, node.properties);
     return vertex;
 };
 
 const systemProperties = ["id", "_rid", "_self", "_ts", "_etag"];
-const addProperties = (propertyBag: any, properties: any) => {
+const addVertexProperties = (propertyBag: any, properties: any) => {
     for (let key in properties) {
         const propertyValues = properties[key];
 
@@ -106,14 +106,14 @@ const addProperties = (propertyBag: any, properties: any) => {
         // Sometimes the value is itself an array
         if (Array.isArray(propertyValues)) {
             for (const propertyValue of propertyValues)
-                addPropertyValue(propertyBag[key], propertyValue);
+            addVertexPropertyValue(propertyBag[key], propertyValue);
         } else {
-            addPropertyValue(propertyBag[key], propertyValues);
+            addVertexPropertyValue(propertyBag[key], propertyValues);
         }
     }
 };
 
-const addPropertyValue = (property: any[], propertyValue: any) => {
+const addVertexPropertyValue = (property: any[], propertyValue: any) => {
     property.push({
         id: Uuid(),
         _value: propertyValue.toString()
@@ -153,8 +153,19 @@ const toDocumentDBEdge = (relationship: any) => {
         _sinkLabel: relationship.b
     };
 
-    addProperties(edge, r.properties);
+    addEdgeProperties(edge, r.properties);
     return edge;
+};
+
+const addEdgeProperties = (propertyBag: any, properties: any) => {
+    for (let key in properties) {
+        const propertyValue = properties[key];
+
+        if (systemProperties.indexOf(key.toLowerCase()) > -1)
+            key += "_prop";
+
+        propertyBag[key] = propertyValue;
+    }
 };
 
 migrateData().then(_ => {
