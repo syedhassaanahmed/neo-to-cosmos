@@ -7,20 +7,22 @@ import Neo from "./neo";
 import Cache from "./cache";
 import { v4 as Uuid } from "uuid";
 
+if (process.env.NODE_ENV !== "production") {
+    const dotenv: any = require("dotenv");
+    dotenv.config();
+}
+
 const args = Arguments();
 
-// Set config defaults
-const config = require(args.config);
-config.logLevel = config.logLevel || "info";
-config.pageSize = config.pageSize || 100;
-
 // Create Logger
-const logger: LoggerInstance = Logger(config);
+const logger: LoggerInstance = Logger();
 logger.info(args);
 
-const cosmos = new Cosmos(config, logger);
-const neo = new Neo(config, logger);
-const cache = new Cache(config);
+const pageSize = Number.parseInt(process.env.PAGE_SIZE || "100");
+
+const cosmos = new Cosmos(logger);
+const neo = new Neo(pageSize, logger);
+const cache = new Cache();
 
 const migrateData = async () => {
     await cosmos.initialize();
@@ -78,7 +80,7 @@ const createVertexes = async () => {
         const documentVertices = nodes.map((node: Neo4j.Node) => toDocumentDBVertex(node));
         await cosmos.bulkImport(documentVertices);
 
-        index += config.pageSize;
+        index += pageSize;
         cache.set(nodeIndexKey, index.toString());
     }
 };
@@ -136,7 +138,7 @@ const createEdges = async () => {
         const documentEdges = relationships.map((relationship: any) => toDocumentDBEdge(relationship));
         await cosmos.bulkImport(documentEdges);
 
-        index += config.pageSize;
+        index += pageSize;
         cache.set(relationshipIndexKey, index.toString());
     }
 };

@@ -4,8 +4,10 @@ import { promisifyAll } from "bluebird";
 import * as BulkImportSproc from "./bulkImport.js";
 
 export default class Cosmos {
-    private readonly config: any;
     private readonly logger: LoggerInstance;
+
+    private readonly database: string;
+    private readonly collection: string;
 
     private readonly databaseLink: string;
     private readonly collectionLink: string;
@@ -13,14 +15,16 @@ export default class Cosmos {
     private readonly client: Client;
     private documentClient: any;
 
-    constructor(config: any, logger: LoggerInstance) {
-        this.config = config;
+    constructor(logger: LoggerInstance) {
         this.logger = logger;
 
-        this.databaseLink = `dbs/${config.cosmosDB.database}`;
-        this.collectionLink = `${this.databaseLink}/colls/${config.cosmosDB.collection}`;
+        this.database = process.env.COSMOSDB_DATABASE;
+        this.collection = process.env.COSMOSDB_COLLECTION;
 
-        this.client = new Client(config.cosmosDB.endpoint, config.cosmosDB.authKey);
+        this.databaseLink = `dbs/${this.database}`;
+        this.collectionLink = `${this.databaseLink}/colls/${this.collection}`;
+
+        this.client = new Client(process.env.COSMOSDB_ENDPOINT, process.env.COSMOSDB_KEY);
         this.client.consistencyLevel = "Eventual";
     }
 
@@ -32,10 +36,10 @@ export default class Cosmos {
     private createDatabaseIfNeeded = async () => {
         try {
             await this.documentClient.createDatabaseAsync({
-                id: this.config.cosmosDB.database
+                id: this.database
             });
         } catch (err) {
-            this.logger.info(`Database ${this.config.cosmosDB.database} already exists`);
+            this.logger.info(`Database ${this.database} already exists`);
         }
     }
 
@@ -46,12 +50,12 @@ export default class Cosmos {
             // Lazy indexing boosts the write performance and lowers RU charge of each insert
             // and is ideal for bulk ingestion scenarios for primarily read-heavy collections
             await this.documentClient.createCollectionAsync(this.databaseLink, {
-                id: this.config.cosmosDB.collection,
+                id: this.collection,
                 indexingPolicy: { indexingMode: "lazy" }
             },
-                { offerThroughput: this.config.cosmosDB.offerThroughput });
+                { offerThroughput: process.env.COSMOSDB_RU || "400" });
         } catch (err) {
-            this.logger.info(`Collection ${this.config.cosmosDB.collection} already exists`);
+            this.logger.info(`Collection ${this.collection} already exists`);
         }
 
         this.createStoredProcedureIfNeeded();
@@ -61,7 +65,7 @@ export default class Cosmos {
         try {
             await this.documentClient.deleteCollectionAsync(this.collectionLink);
         } catch (err) {
-            this.logger.info(`Collection ${this.config.cosmosDB.collection} does not exist`);
+            this.logger.info(`Collection ${this.collection} does not exist`);
         }
     }
 
