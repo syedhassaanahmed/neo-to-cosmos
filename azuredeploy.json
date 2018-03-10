@@ -11,6 +11,13 @@
                 "description": "Number of neo2cosmos app instances"
             }
         },
+        "cosmosDbAccountName": {
+            "type": "string",
+            "defaultValue": "neo2cosmos",
+            "metadata": {
+                "description": "Cosmos DB Account name"
+            }
+        },
         "cosmosDbDatabase": {
             "type": "string",
             "defaultValue": "graphdb",
@@ -52,17 +59,20 @@
             "metadata": {
                 "description": "Neo4j password"
             }
+        },
+        "redisCacheName": {
+            "type": "string",
+            "defaultValue": "neo2cosmos",
+            "metadata": {
+                "description": "Redis Cache name"
+            }
         }
-    },
-    "variables": {
-        "cosmosDbAccountName": "[resourceGroup().name]",
-        "redisName": "[resourceGroup().name]"
     },
     "resources": [
         {
             "type": "Microsoft.DocumentDB/databaseAccounts",
             "kind": "GlobalDocumentDB",
-            "name": "[variables('cosmosDbAccountName')]",
+            "name": "[parameters('cosmosDbAccountName')]",
             "apiVersion": "2016-03-31",
             "location": "[resourceGroup().location]",
             "tags": {
@@ -70,12 +80,12 @@
             },
             "properties": {
                 "databaseAccountOfferType": "Standard",
-                "name": "[variables('cosmosDbAccountName')]"
+                "name": "[parameters('cosmosDbAccountName')]"
             }
         },
         {
             "type": "Microsoft.Cache/Redis",
-            "name": "[variables('redisName')]",
+            "name": "[parameters('redisCacheName')]",
             "apiVersion": "2017-10-01",
             "location": "[resourceGroup().location]",
             "properties": {
@@ -92,8 +102,8 @@
             "apiVersion": "2018-02-01-preview",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]",
-                "[resourceId('Microsoft.Cache/Redis', variables('redisName'))]"
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))]",
+                "[resourceId('Microsoft.Cache/Redis', parameters('redisCacheName'))]"
             ],
             "copy": {
                 "name": "containerGroupCopy",
@@ -125,11 +135,11 @@
                                 },
                                 {
                                     "name": "COSMOSDB_ENDPOINT",
-                                    "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', variables('cosmosDbAccountName'))).documentEndpoint]"
+                                    "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbAccountName'))).documentEndpoint]"
                                 },
                                 {
                                     "name": "COSMOSDB_KEY",
-                                    "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
+                                    "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
                                 },
                                 {
                                     "name": "COSMOSDB_DATABASE",
@@ -157,7 +167,7 @@
                                 },
                                 {
                                     "name": "REDIS_HOST",
-                                    "value": "[concat(variables('redisName'),'.redis.cache.windows.net')]"
+                                    "value": "[concat(parameters('redisCacheName'),'.redis.cache.windows.net')]"
                                 },
                                 {
                                     "name": "REDIS_PORT",
@@ -165,7 +175,7 @@
                                 },
                                 {
                                     "name": "REDIS_KEY",
-                                    "value": "[listKeys(resourceId('Microsoft.Cache/Redis', variables('redisName')), '2017-10-01').primaryKey]"
+                                    "value": "[listKeys(resourceId('Microsoft.Cache/Redis', parameters('redisCacheName')), '2017-10-01').primaryKey]"
                                 },
                                 {
                                     "name": "REDIS_SSL",
