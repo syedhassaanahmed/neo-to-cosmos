@@ -107,7 +107,7 @@ Copying large volume of data from Neo4j to CosmosDB using a single instance of t
 
 Hence we've created an [ARM template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-create-first-template) to orchestrate deployment of the required resources - Cosmos DB, Redis as well as spin up N number of `Azure Container Instances`, each performs a portion of data migration. Container instances are perfect for our scenario as they're billed by the second and you're charged only for compute used while the migration task is running.
 
-To deploy using Azure CLI 2.0;
+To deploy using latest [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest);
 ```
 az group deployment create -g <RESOURCE_GROUP> --template-file azuredeploy.json --parameters neo4jBolt=bolt://<BOLT_ENDPOINT>:7687 neo4jPassword=<NEO4J_PASSWORD>
 ```
