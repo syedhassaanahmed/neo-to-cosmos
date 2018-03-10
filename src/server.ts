@@ -64,7 +64,7 @@ const distributeLoad = async () => {
     logger.info(`endNodeIndex = ${endNodeIndex}, endRelationshipIndex = ${endRelationshipIndex}`);
 };
 
-const nodeIndexKey = `nodeIndex_${args.instance}`;
+const nodeIndexKey = `nodeIndex_${process.env.COSMOSDB_COLLECTION}_${args.instance}`;
 const createVertexes = async () => {
     const indexString = await cache.get(nodeIndexKey);
     let index = indexString ? Number.parseInt(indexString) : startNodeIndex;
@@ -122,7 +122,7 @@ const addVertexPropertyValue = (property: any[], propertyValue: any) => {
     });
 };
 
-const relationshipIndexKey = `relationshipIndex_${args.instance}`;
+const relationshipIndexKey = `relationshipIndex_${process.env.COSMOSDB_COLLECTION}_${args.instance}`;
 const createEdges = async () => {
     const indexString = await cache.get(relationshipIndexKey);
     let index = indexString ? Number.parseInt(indexString) : startRelationshipIndex;
