@@ -8,6 +8,8 @@ export default class Neo {
     constructor(pageSize: Number, logger: LoggerInstance) {
         this.logger = logger;
         this.pageSize = pageSize;
+
+        this.logger.info(`Neo4j Bolt: ${process.env.NEO4J_BOLT}`);
     }
 
     getTotalNodes = async () => {
