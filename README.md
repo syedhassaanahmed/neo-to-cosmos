@@ -3,8 +3,6 @@
 
 This app takes a Neo4j database snapshot and copies all contents to an Azure Cosmos DB Graph database.
 
-**Note:** For large volume of data, we recommend using containerized version of the app and [scaling it out with Azure Container Instances](https://github.com/syedhassaanahmed/neo-to-cosmos/tree/master/aci).
-
 ## Credits
 This is an x-plat continuation of the great work **Brian Sherwin** has done [in this C# repo](https://github.com/bsherwin/neo2cosmos).
 
@@ -59,7 +57,7 @@ COSMOSDB_DATABASE=graphdb
 COSMOSDB_COLLECTION=graphcollz
 COSMOSDB_RU=10000
 
-NEO4J_BOLT=bolt://<NEO4J_BOLT>:7687
+NEO4J_BOLT=bolt://<BOLT_ENDPOINT>:7687
 NEO4J_USERNAME=neo4j
 NEO4J_PASSWORD=<NEO4J_PASSWORD>
 
@@ -94,9 +92,21 @@ docker run --name neo2cosmos-redis -p 6379:6379 -d redis
 `npm start` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. For fresh clean start, do `npm start -- -r`.
 
 ### Docker
-Here is how to run the containerized version of the tool.
+Here is how to run the containerized version of the tool in development environment.
 ```
 docker run -it --rm -v ${pwd}/.env:/app/.env syedhassaanahmed/neo2cosmos
 ```
 - `-v ${pwd}/.env:/app/.env` takes `.env` file in current directory and volume mounts it inside the container.
 - Add `--network "host"` in order to access local Redis and/or Neo4j.
+
+# Scaling out with Azure Container Instances
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
+
+Copying large volume of data from Neo4j to CosmosDB using a single instance of the app may not be entirely feasible, even with maxed out [RUs](https://docs.microsoft.com/en-us/azure/cosmos-db/request-units) and a Redis layer in between.
+
+Hence we've created an [ARM template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-create-first-template) to orchestrate deployment of the required resources - Cosmos DB, Redis as well as spin up N number of `Azure Container Instances`, each performs a portion of data migration. Container instances are perfect for our scenario as they're billed by the second and you're charged only for compute used while the migration task is running.
+
+To deploy using Azure CLI 2.0;
+```
+az group deployment create -g <RESOURCE_GROUP> --template-file azuredeploy.json --parameters neo4jBolt=bolt://<BOLT_ENDPOINT>:7687 neo4jPassword=<NEO4J_PASSWORD>
+```

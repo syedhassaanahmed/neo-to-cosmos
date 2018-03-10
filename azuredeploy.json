@@ -1,0 +1,187 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "migratorInstances": {
+            "type": "int",
+            "defaultValue": 3,
+            "minValue": 1,
+            "maxValue": 20,
+            "metadata": {
+                "description": "Number of neo2cosmos app instances"
+            }
+        },
+        "cosmosDbDatabase": {
+            "type": "string",
+            "defaultValue": "graphdb",
+            "metadata": {
+                "description": "Cosmos DB Database name"
+            }
+        },
+        "cosmosDbCollection": {
+            "type": "string",
+            "defaultValue": "graphcollz",
+            "metadata": {
+                "description": "Cosmos DB Collection name"
+            }
+        },
+        "cosmosDbRu": {
+            "type": "int",
+            "defaultValue": 10000,
+            "minValue": 400,
+            "maxValue": 10000,
+            "metadata": {
+                "description": "Cosmos DB RU throughput in case collection has to be created"
+            }
+        },
+        "neo4jBolt": {
+            "type": "string",
+            "metadata": {
+                "description": "Neo4j bolt url: bolt://<BOLT_ENDPOINT>:7687"
+            }
+        },
+        "neo4jUsername": {
+            "type": "string",
+            "defaultValue": "neo4j",
+            "metadata": {
+                "description": "Neo4j username"
+            }
+        },
+        "neo4jPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Neo4j password"
+            }
+        }
+    },
+    "variables": {
+        "cosmosDbAccountName": "[resourceGroup().name]",
+        "redisName": "[resourceGroup().name]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "kind": "GlobalDocumentDB",
+            "name": "[variables('cosmosDbAccountName')]",
+            "apiVersion": "2016-03-31",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "defaultExperience": "Graph"
+            },
+            "properties": {
+                "databaseAccountOfferType": "Standard",
+                "name": "[variables('cosmosDbAccountName')]"
+            }
+        },
+        {
+            "type": "Microsoft.Cache/Redis",
+            "name": "[variables('redisName')]",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "name": "Basic",
+                    "family": "C",
+                    "capacity": 0
+                }
+            }
+        },
+        {
+            "name": "[concat(resourceGroup().name, copyIndex())]",
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2018-02-01-preview",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbAccountName'))]",
+                "[resourceId('Microsoft.Cache/Redis', variables('redisName'))]"
+            ],
+            "copy": {
+                "name": "containerGroupCopy",
+                "count": "[parameters('migratorInstances')]"
+            },
+            "properties": {
+                "containers": [
+                    {
+                        "name": "[concat(resourceGroup().name, copyIndex())]",
+                        "properties": {
+                            "image": "syedhassaanahmed/neo2cosmos",
+                            "resources": {
+                                "requests": {
+                                    "cpu": 1,
+                                    "memoryInGb": 0.3
+                                }
+                            },
+                            "command": [
+                                "npm",
+                                "start",
+                                "--",
+                                "[concat('-t', parameters('migratorInstances'))]",
+                                "[concat('-i', copyIndex())]"
+                            ],
+                            "environmentVariables": [
+                                {
+                                    "name": "NODE_ENV",
+                                    "value": "production"
+                                },
+                                {
+                                    "name": "COSMOSDB_ENDPOINT",
+                                    "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', variables('cosmosDbAccountName'))).documentEndpoint]"
+                                },
+                                {
+                                    "name": "COSMOSDB_KEY",
+                                    "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', variables('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
+                                },
+                                {
+                                    "name": "COSMOSDB_DATABASE",
+                                    "value": "[parameters('cosmosDbDatabase')]"
+                                },
+                                {
+                                    "name": "COSMOSDB_COLLECTION",
+                                    "value": "[parameters('cosmosDbCollection')]"
+                                },
+                                {
+                                    "name": "COSMOSDB_RU",
+                                    "value": "[parameters('cosmosDbRu')]"
+                                },
+                                {
+                                    "name": "NEO4J_BOLT",
+                                    "value": "[parameters('neo4jBolt')]"
+                                },
+                                {
+                                    "name": "NEO4J_USERNAME",
+                                    "value": "[parameters('neo4jUsername')]"
+                                },
+                                {
+                                    "name": "NEO4J_PASSWORD",
+                                    "value": "[parameters('neo4jPassword')]"
+                                },
+                                {
+                                    "name": "REDIS_HOST",
+                                    "value": "[concat(variables('redisName'),'.redis.cache.windows.net')]"
+                                },
+                                {
+                                    "name": "REDIS_PORT",
+                                    "value": 6380
+                                },
+                                {
+                                    "name": "REDIS_KEY",
+                                    "value": "[listKeys(resourceId('Microsoft.Cache/Redis', variables('redisName')), '2017-10-01').primaryKey]"
+                                },
+                                {
+                                    "name": "REDIS_SSL",
+                                    "value": true
+                                },
+                                {
+                                    "name": "PAGE_SIZE",
+                                    "value": 1000
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "osType": "Linux",
+                "restartPolicy": "OnFailure"
+            }
+        }
+    ]
+}
