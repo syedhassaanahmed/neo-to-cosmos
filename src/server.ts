@@ -1,5 +1,5 @@
 import Arguments from "./arguments";
-import { LoggerInstance } from "winston";
+import * as Winston from "winston";
 import Logger from "./logger";
 import Cosmos from "./cosmos";
 import { v1 as Neo4j } from "neo4j-driver";
@@ -15,8 +15,8 @@ if (process.env.NODE_ENV !== "production") {
 const args = Arguments();
 
 // Create Logger
-const logger: LoggerInstance = Logger();
-logger.info(args);
+const logger: Winston.Logger = Logger();
+logger.info(JSON.stringify(args));
 
 const pageSize = Number.parseInt(process.env.PAGE_SIZE || "100");
 

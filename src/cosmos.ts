@@ -1,10 +1,10 @@
-import { LoggerInstance } from "winston";
+import { Logger } from "winston";
 import { Client } from "documentdb-typescript";
 import { promisifyAll } from "bluebird";
 import * as BulkImportSproc from "./bulkImport.js";
 
 export default class Cosmos {
-    private readonly logger: LoggerInstance;
+    private readonly logger: Logger;
 
     private readonly database: string;
     private readonly collection: string;
@@ -15,7 +15,7 @@ export default class Cosmos {
     private readonly client: Client;
     private documentClient: any;
 
-    constructor(logger: LoggerInstance) {
+    constructor(logger: Logger) {
         this.logger = logger;
 
         this.database = process.env.COSMOSDB_DATABASE;

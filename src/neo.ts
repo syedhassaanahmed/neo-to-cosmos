@@ -1,11 +1,11 @@
-import { LoggerInstance } from "winston";
+import { Logger } from "winston";
 import { v1 as Neo4j } from "neo4j-driver";
 
 export default class Neo {
-    private readonly logger: LoggerInstance;
+    private readonly logger: Logger;
     private readonly pageSize: Number;
 
-    constructor(pageSize: Number, logger: LoggerInstance) {
+    constructor(pageSize: Number, logger: Logger) {
         this.logger = logger;
         this.pageSize = pageSize;
     }
