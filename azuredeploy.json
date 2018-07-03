@@ -86,7 +86,7 @@
         {
             "type": "Microsoft.Cache/Redis",
             "name": "[parameters('redisCacheName')]",
-            "apiVersion": "2017-10-01",
+            "apiVersion": "2018-03-01",
             "location": "[resourceGroup().location]",
             "properties": {
                 "sku": {
@@ -99,7 +99,7 @@
         {
             "name": "[concat(resourceGroup().name, copyIndex())]",
             "type": "Microsoft.ContainerInstance/containerGroups",
-            "apiVersion": "2018-02-01-preview",
+            "apiVersion": "2018-06-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))]",

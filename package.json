@@ -16,21 +16,21 @@
     "argparse": "^1.0.10",
     "bluebird": "^3.5.1",
     "documentdb-typescript": "^1.0.7",
-    "dotenv": "^5.0.1",
+    "dotenv": "^6.0.0",
     "neo4j-driver": "^1.6.1",
     "redis": "^2.8.0",
-    "uuid": "^3.2.1",
-    "winston": "^2.4.2"
+    "uuid": "^3.3.2",
+    "winston": "^3.0.0"
   },
   "devDependencies": {
-    "@types/argparse": "^1.0.33",
-    "@types/bluebird": "^3.5.20",
+    "@types/argparse": "^1.0.34",
+    "@types/bluebird": "^3.5.21",
     "@types/dotenv": "^4.0.3",
     "@types/redis": "^2.8.6",
     "@types/uuid": "^3.4.3",
     "@types/winston": "^2.3.9",
     "mkdirp": "^0.5.1",
     "tslint": "^5.10.0",
-    "typescript": "^2.8.3"
+    "typescript": "^2.9.2"
   }
 }
