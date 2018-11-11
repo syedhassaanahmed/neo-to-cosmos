@@ -1,12 +1,28 @@
-﻿using System;
+﻿using CommandLine;
+using Serilog;
 
 namespace NeoToCosmos
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var commandLineParser = Parser.Default.ParseArguments<CommandLineOptions>(args);
+            if (commandLineParser.Tag != ParserResultType.Parsed)
+                return;
+
+            var commandLineOptions = ((Parsed<CommandLineOptions>)commandLineParser).Value;
+
+            var logger = CreateLogger(commandLineOptions);
+            logger.Information("{@commandLineOptions}", commandLineOptions);
+        }
+
+        private static ILogger CreateLogger(CommandLineOptions commandLineOptions)
+        {
+            return new LoggerConfiguration()
+                .WriteTo.Console(restrictedToMinimumLevel: commandLineOptions.LogLevel)
+                .WriteTo.File("logs/neo-to-cosmos.log")
+                .CreateLogger();
         }
     }
 }
