@@ -52,7 +52,7 @@ Before you run the app, you'll need to supply environment variables which contai
 
 ```
 COSMOSDB_ENDPOINT=https://<COSMOSDB_ACCOUNT>.documents.azure.com:443/
-COSMOSDB_PRIMARYKEY=<COSMOSDB_PRIMARYKEY>
+COSMOSDB_AUTHKEY=<COSMOSDB_AUTHKEY>
 COSMOSDB_DATABASE=graphdb
 COSMOSDB_COLLECTION=graphcollz
 COSMOSDB_PARTITIONKEY=someProperty
@@ -78,7 +78,7 @@ LOG_LEVEL=info
 Select the Keys tab of your Cosmos DB account and you'll see the "URI". Copy that value to  `COSMOSDB_ENDPOINT`.
 
 ### Step 2: Get Your Cosmos DB AuthKey.
-Either primary or secondary key can be used as `COSMOSDB_KEY`
+Either primary or secondary key can be used as `COSMOSDB_AUTHKEY`
 > Hint: Use the copy button. Its way easier than trying to select it with a mouse!!!
 
 ### Step 3: Neo4j config

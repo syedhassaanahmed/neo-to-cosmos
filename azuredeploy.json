@@ -145,7 +145,7 @@
                                     "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbAccountName'))).documentEndpoint]"
                                 },
                                 {
-                                    "name": "COSMOSDB_PRIMARYKEY",
+                                    "name": "COSMOSDB_AUTHKEY",
                                     "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
                                 },
                                 {

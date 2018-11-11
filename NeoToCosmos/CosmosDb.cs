@@ -108,7 +108,7 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            var authKey = Environment.GetEnvironmentVariable("COSMOSDB_PRIMARYKEY");
+            var authKey = Environment.GetEnvironmentVariable("COSMOSDB_AUTHKEY");
             if (string.IsNullOrEmpty(authKey))
             {
                 throw new ArgumentNullException(nameof(authKey));
@@ -139,7 +139,7 @@ namespace NeoToCosmos
 
         public async Task BulkImportAsync(IEnumerable<object> documents)
         {
-            var response = await _graphBulkExecutor.BulkImportAsync(documents);
+            var response = await _graphBulkExecutor.BulkImportAsync(documents, enableUpsert: true);
 
             if (response.BadInputDocuments.Any())
             {
