@@ -4,6 +4,7 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ namespace NeoToCosmos
             }
 
             var documentCollection = await CreateCollectionIfNotExistsAsync(database, collection, partitionKey, offerThroughput);
+            _logger.Information("{@documentCollection}", documentCollection);
             _partitionKey = documentCollection.PartitionKey.Paths.FirstOrDefault()?.Replace("/", string.Empty);
 
             // Set retry options high during initialization (default values).
@@ -52,19 +54,27 @@ namespace NeoToCosmos
             _documentClient.ConnectionPolicy.RetryOptions.MaxRetryAttemptsOnThrottledRequests = 0;
         }
 
-        private async Task<DocumentCollection> CreateCollectionIfNotExistsAsync(string database, string collection, string partitionKey, int offerThroughput)
+        private async Task<DocumentCollection> CreateCollectionIfNotExistsAsync(
+            string database, string collection, string partitionKey, int offerThroughput)
         {
             await _documentClient.CreateDatabaseIfNotExistsAsync(new Database { Id = database });
+
+            var collectionDefinition = new DocumentCollection
+            {
+                Id = collection                
+            };
+
+            if (!string.IsNullOrEmpty(partitionKey))
+            {
+                collectionDefinition.PartitionKey = new PartitionKeyDefinition
+                {
+                    Paths = new Collection<string> { $"/{partitionKey}" }
+                };
+            }
+
             var documentCollection = await _documentClient.CreateDocumentCollectionIfNotExistsAsync(
                 UriFactory.CreateDatabaseUri(database),
-                new DocumentCollection
-                {
-                    Id = collection,
-                    PartitionKey = new PartitionKeyDefinition
-                    {
-                        Paths = new Collection<string> { $"/{partitionKey}" }
-                    }
-                },
+                collectionDefinition,
                 new RequestOptions { OfferThroughput = offerThroughput });
 
             return documentCollection.Resource;
@@ -98,7 +108,7 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            var authKey = Environment.GetEnvironmentVariable("COSMOSDB_AUTH_KEY");
+            var authKey = Environment.GetEnvironmentVariable("COSMOSDB_AUTHKEY");
             if (string.IsNullOrEmpty(authKey))
             {
                 throw new ArgumentNullException(nameof(authKey));
@@ -116,15 +126,26 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(collection));
             }
 
-            var partitionKey = Environment.GetEnvironmentVariable("COSMOSDB_PARTITION_KEY");
+            var partitionKey = Environment.GetEnvironmentVariable("COSMOSDB_PARTITIONKEY");
 
-            var offerThroughputString = Environment.GetEnvironmentVariable("COSMOSDB_OFFER_THROUGHPUT");
+            var offerThroughputString = Environment.GetEnvironmentVariable("COSMOSDB_OFFERTHROUGHPUT");
             if (!int.TryParse(offerThroughputString, out int offerThroughput))
             {
                 offerThroughput = !string.IsNullOrEmpty(partitionKey) ? 1000 : 400;
             }
 
             return (endpoint, authKey, database, collection, partitionKey, offerThroughput);
+        }
+
+        public async Task BulkImportAsync(IEnumerable<object> documents)
+        {
+            var response = await _graphBulkExecutor.BulkImportAsync(documents);
+
+            if (response.BadInputDocuments.Any())
+            {
+                _logger.Error("{@badInputDocuments}", response.BadInputDocuments);
+                throw new Exception($"GraphBulkExecutor found {response.BadInputDocuments.Count} bad graph element(s)!");
+            }
         }
     }
 }
