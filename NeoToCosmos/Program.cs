@@ -1,11 +1,12 @@
 ﻿using CommandLine;
 using Serilog;
+using System.Threading.Tasks;
 
 namespace NeoToCosmos
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var commandLineParser = Parser.Default.ParseArguments<CommandLineOptions>(args);
             if (commandLineParser.Tag != ParserResultType.Parsed)
@@ -15,6 +16,9 @@ namespace NeoToCosmos
 
             var logger = CreateLogger(commandLineOptions);
             logger.Information("{@commandLineOptions}", commandLineOptions);
+
+            var cosmosDb = new CosmosDb(logger);
+            await cosmosDb.InitializeAsync(commandLineOptions.ShouldRestart);
         }
 
         private static ILogger CreateLogger(CommandLineOptions commandLineOptions)
