@@ -108,7 +108,7 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(endpoint));
             }
 
-            var authKey = Environment.GetEnvironmentVariable("COSMOSDB_AUTHKEY");
+            var authKey = Environment.GetEnvironmentVariable("COSMOSDB_PRIMARYKEY");
             if (string.IsNullOrEmpty(authKey))
             {
                 throw new ArgumentNullException(nameof(authKey));

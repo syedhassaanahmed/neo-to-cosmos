@@ -32,11 +32,18 @@
                 "description": "Cosmos DB Collection name"
             }
         },
-        "cosmosDbRu": {
+        "cosmosDbPartitionKey": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Cosmos DB collection's partition key'"
+            }
+        },
+        "cosmosDbOfferThroughput": {
             "type": "int",
-            "defaultValue": 10000,
+            "defaultValue": 1000,
             "minValue": 400,
-            "maxValue": 10000,
+            "maxValue": 1000000,
             "metadata": {
                 "description": "Cosmos DB RU throughput in case collection has to be created"
             }
@@ -138,7 +145,7 @@
                                     "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbAccountName'))).documentEndpoint]"
                                 },
                                 {
-                                    "name": "COSMOSDB_KEY",
+                                    "name": "COSMOSDB_PRIMARYKEY",
                                     "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
                                 },
                                 {
@@ -150,8 +157,12 @@
                                     "value": "[parameters('cosmosDbCollection')]"
                                 },
                                 {
-                                    "name": "COSMOSDB_RU",
-                                    "value": "[parameters('cosmosDbRu')]"
+                                    "name": "COSMOSDB_PARTITIONKEY",
+                                    "value": "[parameters('cosmosDbPartitionKey')]"
+                                },
+                                {
+                                    "name": "COSMOSDB_OFFERTHROUGHPUT",
+                                    "value": "[parameters('cosmosDbOfferThroughput')]"
                                 },
                                 {
                                     "name": "NEO4J_BOLT",

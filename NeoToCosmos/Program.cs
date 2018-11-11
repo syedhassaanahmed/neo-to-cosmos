@@ -6,6 +6,8 @@ namespace NeoToCosmos
 {
     public class Program
     {
+        private static ILogger _logger;
+
         public static async Task Main(string[] args)
         {
             var commandLineParser = Parser.Default.ParseArguments<CommandLineOptions>(args);
@@ -14,10 +16,10 @@ namespace NeoToCosmos
 
             var commandLineOptions = ((Parsed<CommandLineOptions>)commandLineParser).Value;
 
-            var logger = CreateLogger(commandLineOptions);
-            logger.Information("{@commandLineOptions}", commandLineOptions);
+            _logger = CreateLogger(commandLineOptions);
+            _logger.Information("{@commandLineOptions}", commandLineOptions);
 
-            var cosmosDb = new CosmosDb(logger);
+            var cosmosDb = new CosmosDb(_logger);
             await cosmosDb.InitializeAsync(commandLineOptions.ShouldRestart);
         }
 
