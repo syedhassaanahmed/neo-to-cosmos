@@ -26,7 +26,7 @@ namespace NeoToCosmos
 
         public async Task InitializeAsync(bool shouldRestart)
         {
-            var (endpoint, authKey, database, collection, partitionKey, offerThroughput) = GetCosmosDbConfiguration();            
+            var (endpoint, authKey, database, collection, partitionKey, offerThroughput) = GetConfiguration();            
 
             _documentClient = new DocumentClient(new Uri(endpoint), authKey, new ConnectionPolicy
             {
@@ -55,53 +55,7 @@ namespace NeoToCosmos
             _documentClient.ConnectionPolicy.RetryOptions.MaxRetryAttemptsOnThrottledRequests = 0;
         }
 
-        private async Task<DocumentCollection> CreateCollectionIfNotExistsAsync(
-            string database, string collection, string partitionKey, int offerThroughput)
-        {
-            await _documentClient.CreateDatabaseIfNotExistsAsync(new Database { Id = database });
-
-            var collectionDefinition = new DocumentCollection
-            {
-                Id = collection                
-            };
-
-            if (!string.IsNullOrEmpty(partitionKey))
-            {
-                collectionDefinition.PartitionKey = new PartitionKeyDefinition
-                {
-                    Paths = new Collection<string> { $"/{partitionKey}" }
-                };
-            }
-
-            var documentCollection = await _documentClient.CreateDocumentCollectionIfNotExistsAsync(
-                UriFactory.CreateDatabaseUri(database),
-                collectionDefinition,
-                new RequestOptions { OfferThroughput = offerThroughput });
-
-            return documentCollection.Resource;
-        }
-
-        private async Task HandleRestartAsync(string database, string collection)
-        {
-            var collectionUri = UriFactory.CreateDocumentCollectionUri(database, collection);
-
-            try
-            {
-                await _documentClient.DeleteDocumentCollectionAsync(
-                    UriFactory.CreateDocumentCollectionUri(database, collection));
-            }
-            catch (DocumentClientException e)
-            {
-                if (e.StatusCode != System.Net.HttpStatusCode.NotFound)
-                {
-                    throw;
-                }
-
-                _logger.Information($"{collectionUri} doesn't exist");
-            }
-        }
-
-        private (string, string, string, string, string, int) GetCosmosDbConfiguration()
+        private static (string, string, string, string, string, int) GetConfiguration()
         {
             var endpoint = Environment.GetEnvironmentVariable("COSMOSDB_ENDPOINT");
             if (string.IsNullOrEmpty(endpoint))
@@ -136,6 +90,52 @@ namespace NeoToCosmos
             }
 
             return (endpoint, authKey, database, collection, partitionKey, offerThroughput);
+        }
+
+        private async Task HandleRestartAsync(string database, string collection)
+        {
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(database, collection);
+
+            try
+            {
+                await _documentClient.DeleteDocumentCollectionAsync(
+                    UriFactory.CreateDocumentCollectionUri(database, collection));
+            }
+            catch (DocumentClientException e)
+            {
+                if (e.StatusCode != System.Net.HttpStatusCode.NotFound)
+                {
+                    throw;
+                }
+
+                _logger.Information($"{collectionUri} doesn't exist");
+            }
+        }
+
+        private async Task<DocumentCollection> CreateCollectionIfNotExistsAsync(
+            string database, string collection, string partitionKey, int offerThroughput)
+        {
+            await _documentClient.CreateDatabaseIfNotExistsAsync(new Database { Id = database });
+
+            var collectionDefinition = new DocumentCollection
+            {
+                Id = collection                
+            };
+
+            if (!string.IsNullOrEmpty(partitionKey))
+            {
+                collectionDefinition.PartitionKey = new PartitionKeyDefinition
+                {
+                    Paths = new Collection<string> { $"/{partitionKey}" }
+                };
+            }
+
+            var documentCollection = await _documentClient.CreateDocumentCollectionIfNotExistsAsync(
+                UriFactory.CreateDatabaseUri(database),
+                collectionDefinition,
+                new RequestOptions { OfferThroughput = offerThroughput });
+
+            return documentCollection.Resource;
         }
 
         public async Task BulkImportAsync(IEnumerable<object> documents)

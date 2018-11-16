@@ -4,7 +4,6 @@ using Neo4j.Driver.V1;
 using Newtonsoft.Json;
 using Serilog;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,6 +40,36 @@ namespace NeoToCosmos
 
             _cache = new Cache(_logger);
             await CreateVerticesAsync(startNodeIndex, endNodeIndex);
+            await CreateEdgesAsync(startRelationshipIndex, endRelationshipIndex);
+        }
+
+        private static Serilog.ILogger CreateLogger(CommandLineOptions commandLineOptions)
+        {
+            return new LoggerConfiguration()
+                .WriteTo.Console(restrictedToMinimumLevel: commandLineOptions.LogLevel)
+                .WriteTo.File("logs/neo-to-cosmos.log")
+                .CreateLogger();
+        }
+
+        private static async Task<(long, long, long, long)> GetDataBoundariesAsync()
+        {
+            var totalNodes = (double)await _neo4j.GetTotalNodesAsync();
+            var totalRelationships = (double)await _neo4j.GetTotalRelationshipsAsync();
+
+            _logger.Information($"Nodes = {totalNodes}, Relationships = {totalRelationships}");
+            var instanceId = _commandLineOptions.InstanceId;
+            var totalInstances = _commandLineOptions.TotalInstances;
+
+            var startNodeIndex = (long)Math.Floor(totalNodes / totalInstances) * instanceId;
+            var startRelationshipIndex = (long)Math.Floor(totalRelationships / totalInstances) * instanceId;
+
+            var endNodeIndex = (long)Math.Ceiling(totalNodes / totalInstances) * (instanceId + 1);
+            var endRelationshipIndex = (long)Math.Ceiling(totalRelationships / totalInstances) * (instanceId + 1);
+
+            _logger.Information($"startNodeIndex = {startNodeIndex}, startRelationshipIndex = {startRelationshipIndex}");
+            _logger.Information($"endNodeIndex = {endNodeIndex}, endRelationshipIndex = {endRelationshipIndex}");
+
+            return (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex);
         }
 
         private static async Task CreateVerticesAsync(long startNodeIndex, long endNodeIndex)
@@ -90,33 +119,62 @@ namespace NeoToCosmos
             return vertex;
         }
 
-        private static async Task<(long, long, long, long)> GetDataBoundariesAsync()
+        private static async Task CreateEdgesAsync(long startRelationshipIndex, long endRelationshipIndex)
         {
-            var totalNodes = (double)await _neo4j.GetTotalNodesAsync();
-            var totalRelationships = (double)await _neo4j.GetTotalRelationshipsAsync();
+            var relationshipIndexKey = $"relationshipIndex_{_commandLineOptions.InstanceId}";
+            var indexString = await _cache.GetAsync(relationshipIndexKey);
+            var index = !string.IsNullOrEmpty(indexString) ? long.Parse(indexString) : startRelationshipIndex;
+            var relationships = Enumerable.Empty<dynamic>();
 
-            _logger.Information($"Nodes = {totalNodes}, Relationships = {totalRelationships}");
-            var instanceId = _commandLineOptions.InstanceId;
-            var totalInstances = _commandLineOptions.TotalInstances;
+            while (true)
+            {
+                _logger.Information($"Relationship: {index}");
 
-            var startNodeIndex = (long)Math.Floor(totalNodes / totalInstances) * instanceId;
-            var startRelationshipIndex = (long)Math.Floor(totalRelationships / totalInstances) * instanceId;
+                relationships = await _neo4j.GetRelationshipsAsync(index, _commandLineOptions.PageSize, _cosmosDb.PartitionKey);
+                if (!relationships.Any() || index > endRelationshipIndex)
+                    break;
 
-            var endNodeIndex = (long)Math.Ceiling(totalNodes / totalInstances) * (instanceId + 1);
-            var endRelationshipIndex = (long)Math.Ceiling(totalRelationships / totalInstances) * (instanceId + 1);
+                var cosmosDbEdges = relationships.Select(relationship => ToCosmosDBEdge(relationship));
+                await _cosmosDb.BulkImportAsync(cosmosDbEdges);
 
-            _logger.Information($"startNodeIndex = {startNodeIndex}, startRelationshipIndex = {startRelationshipIndex}");
-            _logger.Information($"endNodeIndex = {endNodeIndex}, endRelationshipIndex = {endRelationshipIndex}");
-
-            return (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex);
+                index += _commandLineOptions.PageSize;
+                await _cache.SetAsync(relationshipIndexKey, index.ToString());
+            }
         }
 
-        private static Serilog.ILogger CreateLogger(CommandLineOptions commandLineOptions)
+        private static object ToCosmosDBEdge(dynamic relationshipData)
         {
-            return new LoggerConfiguration()
-                .WriteTo.Console(restrictedToMinimumLevel: commandLineOptions.LogLevel)
-                .WriteTo.File("logs/neo-to-cosmos.log")
-                .CreateLogger();
+            var relationship = (IRelationship)relationshipData.Relationship;
+
+            /* DO NOT use Neo4j's relationship.Id as edgeId
+            Cosmos DB stores both vertices and edges in the same collection 
+            and if Neo4j Node and Relationship Ids are the same, documents will be overwritten.*/
+            var edgeId = $"{relationship.StartNodeId}_{relationship.Type}_{relationship.EndNodeId}";
+
+            var edge = new GremlinEdge
+            (
+                edgeId: edgeId, 
+                edgeLabel: relationship.Type,
+                outVertexId: relationship.StartNodeId.ToString(),
+                inVertexId: relationship.EndNodeId.ToString(),
+                outVertexLabel: relationshipData.SourceLabel,
+                inVertexLabel: relationshipData.SinkLabel,
+                outVertexPartitionKey: relationshipData.SourcePartitionKey,
+                inVertexPartitionKey: relationshipData.SinkPartitionKey
+            );
+
+            foreach (var edgeProperty in relationship.Properties)
+            {
+                var propertyName = edgeProperty.Key;
+                if (_cosmosDbSystemProperties.Contains(propertyName))
+                {
+                    propertyName = "prop_" + propertyName;
+                }
+
+                edge.AddProperty(propertyName, edgeProperty.Value);
+            }
+
+            return edge;
         }
     }
 }

@@ -15,6 +15,13 @@ namespace NeoToCosmos
         {
             _logger = logger;
 
+            var (boltUrl, username, password) = GetConfiguration();
+            _driver = GraphDatabase.Driver(boltUrl, AuthTokens.Basic(username, password));
+            _logger.Information(boltUrl);
+        }
+
+        private static (string, string, string) GetConfiguration()
+        {
             var boltUrl = Environment.GetEnvironmentVariable("NEO4J_BOLT");
             if (string.IsNullOrEmpty(boltUrl))
             {
@@ -33,8 +40,7 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(password));
             }
 
-            _driver = GraphDatabase.Driver(boltUrl, AuthTokens.Basic(username, password));
-            _logger.Information(boltUrl);
+            return (boltUrl, username, password);
         }
 
         public async Task<long> GetTotalNodesAsync()
@@ -53,6 +59,21 @@ namespace NeoToCosmos
         {
             var records = await RunAsync($"MATCH (n) RETURN n ORDER BY ID(n) SKIP {index} LIMIT {pageSize}");
             return records.Select(r => r["n"].As<INode>());
+        }
+
+        public async Task<IEnumerable<dynamic>> GetRelationshipsAsync(long index, int pageSize, string partitionKey)
+        {
+            var partitionProperties = !string.IsNullOrEmpty(partitionKey) ? $", a.{partitionKey}, b.{partitionKey}" : "";
+            var records = await RunAsync($"MATCH (a)-[r]->(b) RETURN labels(a)[0], r, labels(b)[0] {partitionProperties} ORDER BY ID(r) SKIP {index} LIMIT {pageSize}");
+
+            return records.Select(r => new
+            {
+                SourceLabel = r["labels(a)[0]"],
+                SinkLabel = r["labels(b)[0]"].As<string>(),
+                SourcePartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"a.{partitionKey}"] : null,
+                SinkPartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"b.{partitionKey}"] : null,
+                Relationship = r["r"].As<IRelationship>()
+            });
         }
 
         private async Task<List<IRecord>> RunAsync(string cypherQuery)
