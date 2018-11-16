@@ -14,9 +14,10 @@ namespace NeoToCosmos
     public class CosmosDb
     {
         private readonly ILogger _logger;
-        private DocumentClient _documentClient;
-        private string _partitionKey;
+        private DocumentClient _documentClient;        
         private IBulkExecutor _graphBulkExecutor;
+
+        public string PartitionKey { get; private set; }
 
         public CosmosDb(ILogger logger)
         {
@@ -40,7 +41,7 @@ namespace NeoToCosmos
 
             var documentCollection = await CreateCollectionIfNotExistsAsync(database, collection, partitionKey, offerThroughput);
             _logger.Information("{@documentCollection}", documentCollection);
-            _partitionKey = documentCollection.PartitionKey.Paths.FirstOrDefault()?.Replace("/", string.Empty);
+            PartitionKey = documentCollection.PartitionKey.Paths.FirstOrDefault()?.Replace("/", string.Empty);
 
             // Set retry options high during initialization (default values).
             _documentClient.ConnectionPolicy.RetryOptions.MaxRetryWaitTimeInSeconds = 30;

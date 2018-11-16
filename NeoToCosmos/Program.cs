@@ -1,7 +1,11 @@
 ﻿using CommandLine;
+using Microsoft.Azure.CosmosDB.BulkExecutor.Graph.Element;
 using Neo4j.Driver.V1;
+using Newtonsoft.Json;
 using Serilog;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,7 +17,9 @@ namespace NeoToCosmos
         private static Serilog.ILogger _logger;
         private static CosmosDb _cosmosDb;
         private static Neo4J _neo4j;
-        private static Cache _cache;        
+        private static Cache _cache;
+
+        private static readonly string[] _cosmosDbSystemProperties = { "id", "_rid", "_self", "_ts", "_etag" };
 
         public static async Task Main(string[] args)
         {
@@ -53,7 +59,7 @@ namespace NeoToCosmos
                     break;
 
                 var cosmosDbVertices = nodes.Select(node => ToCosmosDBVertex(node));
-                //await _cosmosDb.BulkImportAsync(cosmosDbVertices);
+                await _cosmosDb.BulkImportAsync(cosmosDbVertices);
 
                 index += _commandLineOptions.PageSize;
                 await _cache.SetAsync(nodeIndexKey, index.ToString());
@@ -62,7 +68,26 @@ namespace NeoToCosmos
 
         private static object ToCosmosDBVertex(INode node)
         {
-            return null;
+            var vertex = new GremlinVertex(node.Id.ToString(), node.Labels.First());
+
+            foreach (var nodeProperty in node.Properties)
+            {
+                var propertyName = nodeProperty.Key;
+                if (_cosmosDbSystemProperties.Contains(propertyName))
+                {
+                    propertyName = "prop_" + propertyName;
+                }
+
+                var propertyValue = nodeProperty.Value;
+                if (propertyValue is IEnumerable<object>)
+                {
+                    propertyValue = JsonConvert.SerializeObject(propertyValue);
+                }
+
+                vertex.AddProperty(propertyName, propertyValue);
+            }
+
+            return vertex;
         }
 
         private static async Task<(long, long, long, long)> GetDataBoundariesAsync()

@@ -52,7 +52,7 @@ namespace NeoToCosmos
         public async Task<IEnumerable<INode>> GetNodesAsync(long index, int pageSize)
         {
             var records = await RunAsync($"MATCH (n) RETURN n ORDER BY ID(n) SKIP {index} LIMIT {pageSize}");
-            return records.Select(r => r.As<INode>());
+            return records.Select(r => r["n"].As<INode>());
         }
 
         private async Task<List<IRecord>> RunAsync(string cypherQuery)
