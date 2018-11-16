@@ -17,6 +17,10 @@ namespace NeoToCosmos
             HelpText = "Current Instance Id.")]
         public int InstanceId { get; set; }
 
+        [Option('p', "page-size", Required = false, Default = 1000,
+            HelpText = "Number of documents to read from Neo4j and write to Cosmos DB.")]
+        public int PageSize { get; set; }
+
         [Option('l', "log-level", Required = false, Default = LogEventLevel.Information,
             HelpText = "Logging level.")]
         public LogEventLevel LogLevel { get; set; }
