@@ -1,19 +1,18 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "http://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "migratorInstances": {
             "type": "int",
-            "defaultValue": 3,
+            "defaultValue": 1,
             "minValue": 1,
-            "maxValue": 20,
+            "maxValue": 100,
             "metadata": {
-                "description": "Number of neo2cosmos app instances"
+                "description": "Number of neo-to-cosmos app instances"
             }
         },
         "cosmosDbAccountName": {
             "type": "string",
-            "defaultValue": "neo2cosmos",
             "metadata": {
                 "description": "Cosmos DB Account name"
             }
@@ -66,51 +65,35 @@
             "metadata": {
                 "description": "Neo4j password"
             }
-        },
-        "redisCacheName": {
-            "type": "string",
-            "defaultValue": "neo2cosmos",
-            "metadata": {
-                "description": "Redis Cache name"
-            }
         }
     },
     "resources": [
         {
-            "type": "Microsoft.DocumentDB/databaseAccounts",
-            "kind": "GlobalDocumentDB",
             "name": "[parameters('cosmosDbAccountName')]",
+            "type": "Microsoft.DocumentDB/databaseAccounts",
             "apiVersion": "2016-03-31",
             "location": "[resourceGroup().location]",
+            "kind": "GlobalDocumentDB",
             "tags": {
                 "defaultExperience": "Graph"
             },
             "properties": {
-                "databaseAccountOfferType": "Standard",
-                "name": "[parameters('cosmosDbAccountName')]"
-            }
-        },
-        {
-            "type": "Microsoft.Cache/Redis",
-            "name": "[parameters('redisCacheName')]",
-            "apiVersion": "2018-03-01",
-            "location": "[resourceGroup().location]",
-            "properties": {
-                "sku": {
-                    "name": "Basic",
-                    "family": "C",
-                    "capacity": 0
-                }
+                "name": "[parameters('cosmosDbAccountName')]",
+                "databaseAccountOfferType": "Standard",                
+                "capabilities": [
+                    {
+                        "name": "EnableGremlin"
+                    }
+                ]
             }
         },
         {
             "name": "[concat(resourceGroup().name, copyIndex())]",
             "type": "Microsoft.ContainerInstance/containerGroups",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2018-10-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))]",
-                "[resourceId('Microsoft.Cache/Redis', parameters('redisCacheName'))]"
+                "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))]"
             ],
             "copy": {
                 "name": "containerGroupCopy",
@@ -121,25 +104,20 @@
                     {
                         "name": "[concat(resourceGroup().name, copyIndex())]",
                         "properties": {
-                            "image": "syedhassaanahmed/neo2cosmos",
+                            "image": "syedhassaanahmed/neo-to-cosmos",
                             "resources": {
                                 "requests": {
                                     "cpu": 1,
-                                    "memoryInGb": 0.3
+                                    "memoryInGb": 1
                                 }
                             },
                             "command": [
-                                "npm",
-                                "start",
-                                "--",
+                                "dotnet",
+                                "NeoToCosmos.dll",
                                 "[concat('-t', parameters('migratorInstances'))]",
                                 "[concat('-i', copyIndex())]"
                             ],
                             "environmentVariables": [
-                                {
-                                    "name": "NODE_ENV",
-                                    "value": "production"
-                                },
                                 {
                                     "name": "COSMOSDB_ENDPOINT",
                                     "Value": "[reference(concat('Microsoft.DocumentDb/databaseAccounts/', parameters('cosmosDbAccountName'))).documentEndpoint]"
@@ -175,26 +153,6 @@
                                 {
                                     "name": "NEO4J_PASSWORD",
                                     "value": "[parameters('neo4jPassword')]"
-                                },
-                                {
-                                    "name": "REDIS_HOST",
-                                    "value": "[concat(parameters('redisCacheName'),'.redis.cache.windows.net')]"
-                                },
-                                {
-                                    "name": "REDIS_PORT",
-                                    "value": 6380
-                                },
-                                {
-                                    "name": "REDIS_KEY",
-                                    "value": "[listKeys(resourceId('Microsoft.Cache/Redis', parameters('redisCacheName')), '2017-10-01').primaryKey]"
-                                },
-                                {
-                                    "name": "REDIS_SSL",
-                                    "value": true
-                                },
-                                {
-                                    "name": "PAGE_SIZE",
-                                    "value": 1000
                                 }
                             ]
                         }

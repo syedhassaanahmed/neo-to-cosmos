@@ -15,7 +15,7 @@ namespace NeoToCosmos
             if (shouldRestart)
             {
                 var di = new DirectoryInfo(cachePath);
-                if(di.Exists)
+                if (di.Exists)
                 {
                     foreach (var file in di.GetFiles())
                     {

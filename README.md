@@ -1,11 +1,12 @@
 # neo-to-cosmos
-[![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo2cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo2cosmos/)
+[![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
 
-This app takes a Neo4j database snapshot and copies all contents to an Azure Cosmos DB Graph database.
+This app takes a Neo4j database snapshot and copies all content to an Azure Cosmos DB Graph database.
 
 ## Disclaimer
 - The app is **NOT intended to synchronize a live production database**.
 - Node or Relationship property names which are [system reserved in Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources#system-vs-user-defined-resources) will be prepended with `prop_`, i.e. `id` will become `prop_id`.
+- Because Cosmos DB stores vertices and edges in the same collection, Neo4j Relationship Ids will be appended with `edge_` in order to avoid conflicts with Node Ids.
 - This project is **NOT officially supported by Microsoft**. It is an independent effort, although we appreciate you to submit PRs to improve it.
 
 ## Get Started
@@ -79,7 +80,7 @@ If you used the defaults, you should only need to set `NEO4J_PASSWORD` to whatev
 ### Docker
 Here is how to run the containerized version of the tool in development environment.
 ```
-docker run -it --rm -e <ENVIRONMENT_VARIABLES> syedhassaanahmed/neo2cosmos
+docker run -it --rm -e <ENVIRONMENT_VARIABLES> syedhassaanahmed/neo-to-cosmos
 ```
 - Add `--network "host"` in order to access local Neo4j.
 

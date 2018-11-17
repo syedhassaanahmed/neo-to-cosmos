@@ -6,7 +6,6 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace NeoToCosmos
@@ -33,7 +32,7 @@ namespace NeoToCosmos
             _logger.Information("{@commandLineOptions}", _commandLineOptions);
 
             _neo4j = new Neo4j(_logger);
-            var (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex) = 
+            var (startNodeIndex, endNodeIndex, startRelationshipIndex, endRelationshipIndex) = 
                 await GetDataBoundsAsync();
 
             _cache = new Cache(_commandLineOptions.ShouldRestart);
@@ -68,10 +67,10 @@ namespace NeoToCosmos
             var endNodeIndex = (long)Math.Ceiling(totalNodes / totalInstances) * (instanceId + 1);
             var endRelationshipIndex = (long)Math.Ceiling(totalRelationships / totalInstances) * (instanceId + 1);
 
-            _logger.Information($"startNodeIndex = {startNodeIndex}, startRelationshipIndex = {startRelationshipIndex}");
-            _logger.Information($"endNodeIndex = {endNodeIndex}, endRelationshipIndex = {endRelationshipIndex}");
+            _logger.Information($"startNodeIndex = {startNodeIndex}, endNodeIndex = {endNodeIndex}");
+            _logger.Information($"startRelationshipIndex = {startRelationshipIndex}, endRelationshipIndex = {endRelationshipIndex}");
 
-            return (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex);
+            return (startNodeIndex, endNodeIndex, startRelationshipIndex, endRelationshipIndex);
         }
 
         private static async Task CreateVerticesAsync(long startNodeIndex, long endNodeIndex)
@@ -97,26 +96,30 @@ namespace NeoToCosmos
 
         private static GremlinVertex ToCosmosDBVertex(INode node)
         {
-            var vertex = new GremlinVertex(WebUtility.UrlEncode(node.Id.ToString()), node.Labels.First());
+            var vertex = new GremlinVertex(node.Id.ToString(), node.Labels.First());
+            AddProperties(node.Properties, (n, v) => vertex.AddProperty(n, v));
 
-            foreach (var nodeProperty in node.Properties)
+            return vertex;
+        }
+
+        private static void AddProperties(IReadOnlyDictionary<string, object> properties, Action<string, object> addProperty)
+        {
+            foreach (var property in properties)
             {
-                var propertyName = nodeProperty.Key;
+                var propertyName = property.Key;
                 if (_cosmosDbSystemProperties.Contains(propertyName))
                 {
                     propertyName = "prop_" + propertyName;
                 }
 
-                var propertyValue = nodeProperty.Value;
+                var propertyValue = property.Value;
                 if (propertyValue is IEnumerable<object>)
                 {
                     propertyValue = JsonConvert.SerializeObject(propertyValue);
                 }
 
-                vertex.AddProperty(propertyName, propertyValue);
+                addProperty(propertyName, propertyValue);
             }
-
-            return vertex;
         }
 
         private static async Task CreateEdgesAsync(long startRelationshipIndex, long endRelationshipIndex)
@@ -143,35 +146,24 @@ namespace NeoToCosmos
         private static GremlinEdge ToCosmosDBEdge(Neo4jRelationship relationshipData)
         {
             var relationship = relationshipData.Relationship;
-            
-            /* DO NOT use Neo4j's relationship.Id as edgeId
+
+            /* DO NOT use Neo4j's relationship.Id directly as edgeId
             Cosmos DB stores both vertices and edges in the same collection 
             and if Neo4j Node and Relationship Ids are the same, documents will be overwritten.*/
-            var edgeId = WebUtility.UrlEncode($"{relationship.StartNodeId}_{relationship.Type}_{relationship.EndNodeId}");
 
             var edge = new GremlinEdge
             (
-                edgeId: edgeId, 
+                edgeId: $"edge_{relationship.Id}", 
                 edgeLabel: relationship.Type,
-                outVertexId: WebUtility.UrlEncode(relationship.StartNodeId.ToString()),
-                inVertexId: WebUtility.UrlEncode(relationship.EndNodeId.ToString()),
+                outVertexId: relationship.StartNodeId.ToString(),
+                inVertexId: relationship.EndNodeId.ToString(),
                 outVertexLabel: relationshipData.SourceLabel,
                 inVertexLabel: relationshipData.SinkLabel,
                 outVertexPartitionKey: relationshipData.SourcePartitionKey,
                 inVertexPartitionKey: relationshipData.SinkPartitionKey
             );
 
-            foreach (var edgeProperty in relationship.Properties)
-            {
-                var propertyName = edgeProperty.Key;
-                if (_cosmosDbSystemProperties.Contains(propertyName))
-                {
-                    propertyName = "prop_" + propertyName;
-                }
-
-                edge.AddProperty(propertyName, edgeProperty.Value);
-            }
-
+            AddProperties(relationship.Properties, (n, v) => edge.AddProperty(n, v));
             return edge;
         }
     }
