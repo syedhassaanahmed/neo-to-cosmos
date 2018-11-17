@@ -6,12 +6,21 @@ using System.Threading.Tasks;
 
 namespace NeoToCosmos
 {
-    public class Neo4J : IDisposable
+    public class Neo4jRelationship
+    {
+        public IRelationship Relationship { get; set; }
+        public string SourceLabel { get; set; }
+        public string SinkLabel { get; set; }
+        public object SourcePartitionKey { get; set; }
+        public object SinkPartitionKey { get; set; }        
+    }
+
+    public class Neo4j : IDisposable
     {
         private readonly Serilog.ILogger _logger;        
         private readonly IDriver _driver;
 
-        public Neo4J(Serilog.ILogger logger)
+        public Neo4j(Serilog.ILogger logger)
         {
             _logger = logger;
 
@@ -61,18 +70,18 @@ namespace NeoToCosmos
             return records.Select(r => r["n"].As<INode>());
         }
 
-        public async Task<IEnumerable<dynamic>> GetRelationshipsAsync(long index, int pageSize, string partitionKey)
+        public async Task<IEnumerable<Neo4jRelationship>> GetRelationshipsAsync(long index, int pageSize, string partitionKey)
         {
             var partitionProperties = !string.IsNullOrEmpty(partitionKey) ? $", a.{partitionKey}, b.{partitionKey}" : "";
             var records = await RunAsync($"MATCH (a)-[r]->(b) RETURN labels(a)[0], r, labels(b)[0] {partitionProperties} ORDER BY ID(r) SKIP {index} LIMIT {pageSize}");
 
-            return records.Select(r => new
+            return records.Select(r => new Neo4jRelationship
             {
-                SourceLabel = r["labels(a)[0]"],
+                Relationship = r["r"].As<IRelationship>(),
+                SourceLabel = r["labels(a)[0]"].As<string>(),
                 SinkLabel = r["labels(b)[0]"].As<string>(),
                 SourcePartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"a.{partitionKey}"] : null,
-                SinkPartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"b.{partitionKey}"] : null,
-                Relationship = r["r"].As<IRelationship>()
+                SinkPartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"b.{partitionKey}"] : null
             });
         }
 

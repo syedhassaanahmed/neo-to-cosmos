@@ -16,7 +16,7 @@ namespace NeoToCosmos
         private static CommandLineOptions _commandLineOptions;
         private static Serilog.ILogger _logger;
         private static CosmosDb _cosmosDb;
-        private static Neo4J _neo4j;
+        private static Neo4j _neo4j;
         private static Cache _cache;
 
         private static readonly string[] _cosmosDbSystemProperties = { "id", "_rid", "_self", "_ts", "_etag" };
@@ -35,7 +35,7 @@ namespace NeoToCosmos
             _cosmosDb = new CosmosDb(_logger);
             await _cosmosDb.InitializeAsync(_commandLineOptions.ShouldRestart);
 
-            _neo4j = new Neo4J(_logger);
+            _neo4j = new Neo4j(_logger);
             var (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex) = 
                 await GetDataBoundsAsync();
 
@@ -94,7 +94,7 @@ namespace NeoToCosmos
             }
         }
 
-        private static object ToCosmosDBVertex(INode node)
+        private static GremlinVertex ToCosmosDBVertex(INode node)
         {
             var vertex = new GremlinVertex(WebUtility.UrlEncode(node.Id.ToString()), node.Labels.First());
 
@@ -123,7 +123,7 @@ namespace NeoToCosmos
             var relationshipIndexKey = $"relationshipIndex_{_commandLineOptions.InstanceId}";
             var indexString = _cache.Get(relationshipIndexKey);
             var index = !string.IsNullOrEmpty(indexString) ? long.Parse(indexString) : startRelationshipIndex;
-            var relationships = Enumerable.Empty<dynamic>();
+            var relationships = Enumerable.Empty<Neo4jRelationship>();
 
             while (index < endRelationshipIndex)
             {
@@ -139,10 +139,10 @@ namespace NeoToCosmos
             }
         }
 
-        private static object ToCosmosDBEdge(dynamic relationshipData)
+        private static GremlinEdge ToCosmosDBEdge(Neo4jRelationship relationshipData)
         {
-            var relationship = (IRelationship)relationshipData.Relationship;
-
+            var relationship = relationshipData.Relationship;
+            
             /* DO NOT use Neo4j's relationship.Id as edgeId
             Cosmos DB stores both vertices and edges in the same collection 
             and if Neo4j Node and Relationship Ids are the same, documents will be overwritten.*/
