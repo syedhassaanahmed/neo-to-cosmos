@@ -32,14 +32,15 @@ namespace NeoToCosmos
             _logger = CreateLogger(_commandLineOptions);
             _logger.Information("{@commandLineOptions}", _commandLineOptions);
 
-            _cosmosDb = new CosmosDb(_logger);
-            await _cosmosDb.InitializeAsync(_commandLineOptions.ShouldRestart);
-
             _neo4j = new Neo4j(_logger);
             var (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex) = 
                 await GetDataBoundsAsync();
 
             _cache = new Cache(_commandLineOptions.ShouldRestart);
+
+            _cosmosDb = new CosmosDb(_logger);
+            await _cosmosDb.InitializeAsync(_commandLineOptions.ShouldRestart);
+
             await CreateVerticesAsync(startNodeIndex, endNodeIndex);
             await CreateEdgesAsync(startRelationshipIndex, endRelationshipIndex);
         }

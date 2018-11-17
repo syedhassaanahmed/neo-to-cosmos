@@ -37,12 +37,7 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(boltUrl));
             }
 
-            var username = Environment.GetEnvironmentVariable("NEO4J_USERNAME");
-            if (string.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException(nameof(username));
-            }
-
+            var username = Environment.GetEnvironmentVariable("NEO4J_USERNAME") ?? "neo4j";
             var password = Environment.GetEnvironmentVariable("NEO4J_PASSWORD");
             if (string.IsNullOrEmpty(password))
             {

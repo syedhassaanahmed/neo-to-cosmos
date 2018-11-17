@@ -15,9 +15,12 @@ namespace NeoToCosmos
             if (shouldRestart)
             {
                 var di = new DirectoryInfo(cachePath);
-                foreach (var file in di.GetFiles())
+                if(di.Exists)
                 {
-                    file.Delete();
+                    foreach (var file in di.GetFiles())
+                    {
+                        file.Delete();
+                    }
                 }
             }
 

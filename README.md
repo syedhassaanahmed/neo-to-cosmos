@@ -51,15 +51,14 @@ COSMOSDB_ENDPOINT=https://<COSMOSDB_ACCOUNT>.documents.azure.com:443/
 COSMOSDB_AUTHKEY=<COSMOSDB_AUTHKEY>
 COSMOSDB_DATABASE=graphdb
 COSMOSDB_COLLECTION=graphcollz
+COSMOSDB_PARTITIONKEY=someProperty # mandatory for unlimited collections
+COSMOSDB_OFFERTHROUGHPUT=1000 # default is 400 for fixed and 1000 for unlimited collections
 
 NEO4J_BOLT=bolt://<BOLT_ENDPOINT>:7687
-NEO4J_USERNAME=neo4j
+NEO4J_USERNAME=<NEO4J_USERNAME> # default is 'neo4j'
 NEO4J_PASSWORD=<NEO4J_PASSWORD>
 
-# optional settings
-COSMOSDB_PARTITIONKEY=someProperty
-COSMOSDB_OFFERTHROUGHPUT=1000
-CACHE_PATH=<PATH_TO_ROCKSDB_DIRECTORY>
+CACHE_PATH=<PATH_TO_CACHE_DIRECTORY> #default is 'cache'
 ```
 
 ### Step 1: Get Your Cosmos DB Endpoint.
