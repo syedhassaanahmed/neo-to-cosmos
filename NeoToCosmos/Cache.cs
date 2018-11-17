@@ -1,25 +1,53 @@
-﻿using Serilog;
-using System.Threading.Tasks;
+﻿using RocksDbSharp;
+using System;
+using System.IO;
 
 namespace NeoToCosmos
 {
-    public class Cache
+    public class Cache : IDisposable
     {
-        private readonly ILogger _logger;
+        private readonly RocksDb _rocksDb;
 
-        public Cache(ILogger logger)
+        public Cache(bool shouldRestart)
         {
-            _logger = logger;
+            var cachePath = Environment.GetEnvironmentVariable("CACHE_PATH") ?? "cache";
+
+            if (shouldRestart)
+            {
+                var di = new DirectoryInfo(cachePath);
+                foreach (var file in di.GetFiles())
+                {
+                    file.Delete();
+                }
+            }
+
+            var options = new DbOptions().SetCreateIfMissing(true);
+            _rocksDb = RocksDb.Open(options, cachePath);
         }
 
-        public async Task<string> GetAsync(string key)
+        private static void HandleRestart(string cachePath)
         {
-            return null;
+            var di = new DirectoryInfo(cachePath);
+
+            foreach (var file in di.GetFiles())
+            {
+                file.Delete();
+            }
         }
 
-        public async Task SetAsync(string nodeIndexKey, string v)
+        public string Get(string key)
         {
-            
+            return _rocksDb.Get(key);
+        }
+
+        public void Set(string key, string value)
+        {
+            _rocksDb.Put(key, value);
+        }
+
+        public void Dispose()
+        {
+            _rocksDb.Dispose();
         }
     }
 }

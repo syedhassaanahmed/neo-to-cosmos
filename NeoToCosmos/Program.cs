@@ -6,6 +6,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace NeoToCosmos
@@ -36,9 +37,9 @@ namespace NeoToCosmos
 
             _neo4j = new Neo4J(_logger);
             var (startNodeIndex, startRelationshipIndex, endNodeIndex, endRelationshipIndex) = 
-                await GetDataBoundariesAsync();
+                await GetDataBoundsAsync();
 
-            _cache = new Cache(_logger);
+            _cache = new Cache(_commandLineOptions.ShouldRestart);
             await CreateVerticesAsync(startNodeIndex, endNodeIndex);
             await CreateEdgesAsync(startRelationshipIndex, endRelationshipIndex);
         }
@@ -51,7 +52,7 @@ namespace NeoToCosmos
                 .CreateLogger();
         }
 
-        private static async Task<(long, long, long, long)> GetDataBoundariesAsync()
+        private static async Task<(long, long, long, long)> GetDataBoundsAsync()
         {
             var totalNodes = (double)await _neo4j.GetTotalNodesAsync();
             var totalRelationships = (double)await _neo4j.GetTotalRelationshipsAsync();
@@ -75,29 +76,27 @@ namespace NeoToCosmos
         private static async Task CreateVerticesAsync(long startNodeIndex, long endNodeIndex)
         {
             var nodeIndexKey = $"nodeIndex_{_commandLineOptions.InstanceId}";
-            var indexString = await _cache.GetAsync(nodeIndexKey);
+            var indexString = _cache.Get(nodeIndexKey);
             var index = !string.IsNullOrEmpty(indexString) ? long.Parse(indexString) : startNodeIndex;
             var nodes = Enumerable.Empty<INode>();
 
-            while (true)
+            while (index < endNodeIndex)
             {
-                _logger.Information($"Node: {index}");
-
                 nodes = await _neo4j.GetNodesAsync(index, _commandLineOptions.PageSize);
-                if (!nodes.Any() || index > endNodeIndex)
+                if (!nodes.Any())
                     break;
 
                 var cosmosDbVertices = nodes.Select(node => ToCosmosDBVertex(node));
                 await _cosmosDb.BulkImportAsync(cosmosDbVertices);
 
                 index += _commandLineOptions.PageSize;
-                await _cache.SetAsync(nodeIndexKey, index.ToString());
+                _cache.Set(nodeIndexKey, index.ToString());
             }
         }
 
         private static object ToCosmosDBVertex(INode node)
         {
-            var vertex = new GremlinVertex(node.Id.ToString(), node.Labels.First());
+            var vertex = new GremlinVertex(WebUtility.UrlEncode(node.Id.ToString()), node.Labels.First());
 
             foreach (var nodeProperty in node.Properties)
             {
@@ -122,23 +121,21 @@ namespace NeoToCosmos
         private static async Task CreateEdgesAsync(long startRelationshipIndex, long endRelationshipIndex)
         {
             var relationshipIndexKey = $"relationshipIndex_{_commandLineOptions.InstanceId}";
-            var indexString = await _cache.GetAsync(relationshipIndexKey);
+            var indexString = _cache.Get(relationshipIndexKey);
             var index = !string.IsNullOrEmpty(indexString) ? long.Parse(indexString) : startRelationshipIndex;
             var relationships = Enumerable.Empty<dynamic>();
 
-            while (true)
+            while (index < endRelationshipIndex)
             {
-                _logger.Information($"Relationship: {index}");
-
                 relationships = await _neo4j.GetRelationshipsAsync(index, _commandLineOptions.PageSize, _cosmosDb.PartitionKey);
-                if (!relationships.Any() || index > endRelationshipIndex)
+                if (!relationships.Any())
                     break;
 
                 var cosmosDbEdges = relationships.Select(relationship => ToCosmosDBEdge(relationship));
                 await _cosmosDb.BulkImportAsync(cosmosDbEdges);
 
                 index += _commandLineOptions.PageSize;
-                await _cache.SetAsync(relationshipIndexKey, index.ToString());
+                _cache.Set(relationshipIndexKey, index.ToString());
             }
         }
 
@@ -149,14 +146,14 @@ namespace NeoToCosmos
             /* DO NOT use Neo4j's relationship.Id as edgeId
             Cosmos DB stores both vertices and edges in the same collection 
             and if Neo4j Node and Relationship Ids are the same, documents will be overwritten.*/
-            var edgeId = $"{relationship.StartNodeId}_{relationship.Type}_{relationship.EndNodeId}";
+            var edgeId = WebUtility.UrlEncode($"{relationship.StartNodeId}_{relationship.Type}_{relationship.EndNodeId}");
 
             var edge = new GremlinEdge
             (
                 edgeId: edgeId, 
                 edgeLabel: relationship.Type,
-                outVertexId: relationship.StartNodeId.ToString(),
-                inVertexId: relationship.EndNodeId.ToString(),
+                outVertexId: WebUtility.UrlEncode(relationship.StartNodeId.ToString()),
+                inVertexId: WebUtility.UrlEncode(relationship.EndNodeId.ToString()),
                 outVertexLabel: relationshipData.SourceLabel,
                 inVertexLabel: relationshipData.SinkLabel,
                 outVertexPartitionKey: relationshipData.SourcePartitionKey,

@@ -78,7 +78,7 @@ namespace NeoToCosmos
 
         private async Task<List<IRecord>> RunAsync(string cypherQuery)
         {
-            _logger.Debug(cypherQuery);
+            _logger.Information(cypherQuery);
 
             using (var session = _driver.Session())
             {

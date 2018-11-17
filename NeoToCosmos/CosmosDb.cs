@@ -41,6 +41,7 @@ namespace NeoToCosmos
 
             var documentCollection = await CreateCollectionIfNotExistsAsync(database, collection, partitionKey, offerThroughput);
             _logger.Information("{@documentCollection}", documentCollection);
+
             PartitionKey = documentCollection.PartitionKey.Paths.FirstOrDefault()?.Replace("/", string.Empty);
 
             // Set retry options high during initialization (default values).
@@ -98,8 +99,7 @@ namespace NeoToCosmos
 
             try
             {
-                await _documentClient.DeleteDocumentCollectionAsync(
-                    UriFactory.CreateDocumentCollectionUri(database, collection));
+                await _documentClient.DeleteDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(database, collection));
             }
             catch (DocumentClientException e)
             {
@@ -117,10 +117,7 @@ namespace NeoToCosmos
         {
             await _documentClient.CreateDatabaseIfNotExistsAsync(new Database { Id = database });
 
-            var collectionDefinition = new DocumentCollection
-            {
-                Id = collection                
-            };
+            var collectionDefinition = new DocumentCollection { Id = collection };
 
             if (!string.IsNullOrEmpty(partitionKey))
             {
