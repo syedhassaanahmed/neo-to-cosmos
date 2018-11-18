@@ -7,13 +7,11 @@ $env:COSMOSDB_OFFERTHROUGHPUT = "10000"
 $env:NEO4J_USERNAME = "neo4j"
 $env:NEO4J_PASSWORD = "Neo4j"
 
-$CONTAINER_NAME="neo4j-got"
 $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:$NEO4J_BOLT_PORT"
 $NEO4J_HTTP_PORT=7474
 
-docker rm -f $CONTAINER_NAME 2> $null
-docker run --name $CONTAINER_NAME -d -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
+docker run --name "neo4j-got" -d -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
     syedhassaanahmed/neo4j-game-of-thrones
