@@ -50,7 +50,7 @@ namespace NeoToCosmos
 
         public void Dispose()
         {
-            _rocksDb.Dispose();
+            _rocksDb?.Dispose();
         }
     }
 }

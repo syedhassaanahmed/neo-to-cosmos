@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace NeoToCosmos
 {
-    public class CosmosDb
+    public class CosmosDb : IDisposable
     {
         private readonly ILogger _logger;
         private DocumentClient _documentClient;        
@@ -144,6 +144,11 @@ namespace NeoToCosmos
                 _logger.Error("{@badInputDocuments}", response.BadInputDocuments);
                 throw new Exception($"GraphBulkExecutor found {response.BadInputDocuments.Count} bad graph element(s)!");
             }
+        }
+
+        public void Dispose()
+        {
+            _documentClient?.Dispose();
         }
     }
 }
