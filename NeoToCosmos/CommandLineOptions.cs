@@ -14,7 +14,7 @@ namespace NeoToCosmos
         public int TotalInstances { get; set; }
 
         [Option('i', "instance", Required = false, Default = 0,
-            HelpText = "Current Instance Id.")]
+            HelpText = "Current (zero-indexed) Instance Id.")]
         public int InstanceId { get; set; }
 
         [Option('p', "page-size", Required = false, Default = 1000,

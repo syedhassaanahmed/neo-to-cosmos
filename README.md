@@ -1,7 +1,7 @@
 # neo-to-cosmos
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
-
 [![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
+
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
 
 This app takes a Neo4j database snapshot and copies all content to an Azure Cosmos DB Graph database.
 
@@ -41,19 +41,16 @@ CACHE_PATH=<PATH_TO_CACHE_DIRECTORY> #default is 'cache'
 ## Run the tool
 `dotnet NeoToCosmos.dll` and watch your data being copied. If for some reason you couldn't transfer the data completely, simply rerun the command. For fresh clean start, add `-r` switch.
 
-### Docker
-Here is how to run the containerized version of the tool in development environment.
+Here is how to run the containerized version of the tool.
 ```
 docker run -d -e <ENVIRONMENT_VARIABLES> syedhassaanahmed/neo-to-cosmos
 ```
-- Add `--network "host"` in order to access local Neo4j.
+- Add `--network "host"` in order to access local Neo4j in dev environment.
 
-# Scale out
-Copying large volume of data from Neo4j to CosmosDB using a single instance of the app may not be entirely feasible, even with maxed out [RUs](https://docs.microsoft.com/en-us/azure/cosmos-db/request-units) and a cache layer in between.
+## Scale out
+Copying large volume of data from Neo4j to CosmosDB using a single instance of the app may not be entirely feasible, even with maxed out [RUs](https://docs.microsoft.com/en-us/azure/cosmos-db/request-units) and a cache layer. Hence we've provided an [ARM template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-create-first-template) to orchestrate deployment of Cosmos DB and N number of [Azure Container Instances](https://docs.microsoft.com/en-us/azure/container-instances/container-instances-restart-policy), each performs a portion of data migration.
 
-Hence we've provided an [ARM template](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-manager-create-first-template) to orchestrate deployment of Cosmos DB and N number of `Azure Container Instances`, each performs a portion of data migration. Container instances are perfect for our scenario as they're billed by the second and you're charged only for compute used while the migration task is running. 
-
-In order to provide resilience to the migration, we also persist [RocksDB](https://github.com/facebook/rocksdb) on an [emptyDir volume](https://docs.microsoft.com/en-us/azure/container-instances/container-instances-volume-emptydir#emptydir-volume). An `emptyDir` can survive container crashes.
+In order to achieve resilience during the migration, we also persist a [RocksDB](https://github.com/facebook/rocksdb) cache on an [emptyDir volume](https://docs.microsoft.com/en-us/azure/container-instances/container-instances-volume-emptydir#emptydir-volume). An `emptyDir` can survive container crashes.
 
 To deploy the template using latest [Azure CLI 2.0](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest);
 ```

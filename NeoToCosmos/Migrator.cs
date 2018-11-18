@@ -30,8 +30,16 @@ namespace NeoToCosmos
 
         public async Task MigrateAsync()
         {
+            var totalNodes = await _neo4j.GetTotalNodesAsync();
+            var totalRelationships = await _neo4j.GetTotalRelationshipsAsync();
+
+            _logger.Information($"Nodes = {totalNodes}, Relationships = {totalRelationships}");
+
             var (startNodeIndex, endNodeIndex, startRelationshipIndex, endRelationshipIndex) =
-                await GetDataBoundsAsync();
+                GetDataBounds(totalNodes, totalRelationships);
+
+            _logger.Information($"startNodeIndex = {startNodeIndex}, endNodeIndex = {endNodeIndex}");
+            _logger.Information($"startRelationshipIndex = {startRelationshipIndex}, endRelationshipIndex = {endRelationshipIndex}");
 
             await _cosmosDb.InitializeAsync(_commandLineOptions.ShouldRestart);
 
@@ -39,23 +47,16 @@ namespace NeoToCosmos
             await CreateEdgesAsync(startRelationshipIndex, endRelationshipIndex);
         }
 
-        public async Task<(long, long, long, long)> GetDataBoundsAsync()
+        public (long, long, long, long) GetDataBounds(double totalNodes, double totalRelationships)
         {
-            var totalNodes = (double)await _neo4j.GetTotalNodesAsync();
-            var totalRelationships = (double)await _neo4j.GetTotalRelationshipsAsync();
-
-            _logger.Information($"Nodes = {totalNodes}, Relationships = {totalRelationships}");
             var instanceId = _commandLineOptions.InstanceId;
             var totalInstances = _commandLineOptions.TotalInstances;
 
-            var startNodeIndex = (long)Math.Floor(totalNodes / totalInstances) * instanceId;
-            var startRelationshipIndex = (long)Math.Floor(totalRelationships / totalInstances) * instanceId;
+            var startNodeIndex = (long)Math.Ceiling(totalNodes / totalInstances * instanceId);
+            var endNodeIndex = (long)Math.Floor(totalNodes / totalInstances * (instanceId + 1));
 
-            var endNodeIndex = (long)Math.Ceiling(totalNodes / totalInstances) * (instanceId + 1);
-            var endRelationshipIndex = (long)Math.Ceiling(totalRelationships / totalInstances) * (instanceId + 1);
-
-            _logger.Information($"startNodeIndex = {startNodeIndex}, endNodeIndex = {endNodeIndex}");
-            _logger.Information($"startRelationshipIndex = {startRelationshipIndex}, endRelationshipIndex = {endRelationshipIndex}");
+            var startRelationshipIndex = (long)Math.Ceiling(totalRelationships / totalInstances * instanceId);
+            var endRelationshipIndex = (long)Math.Floor(totalRelationships / totalInstances * (instanceId + 1));
 
             return (startNodeIndex, endNodeIndex, startRelationshipIndex, endRelationshipIndex);
         }
@@ -89,7 +90,7 @@ namespace NeoToCosmos
             return vertex;
         }
 
-        private static void AddProperties(IReadOnlyDictionary<string, object> properties, Action<string, object> addProperty)
+        public static void AddProperties(IReadOnlyDictionary<string, object> properties, Action<string, object> addProperty)
         {
             foreach (var property in properties)
             {

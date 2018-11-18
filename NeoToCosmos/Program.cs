@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using Serilog;
+using System;
 using System.Threading.Tasks;
 
 namespace NeoToCosmos
@@ -13,6 +14,11 @@ namespace NeoToCosmos
                 return;
 
             var commandLineOptions = ((Parsed<CommandLineOptions>)commandLineParser).Value;
+            if (commandLineOptions.InstanceId >= commandLineOptions.TotalInstances)
+            {
+                throw new ArgumentException(
+                    $"InstanceId: {commandLineOptions.InstanceId} is invalid. Cannot exceed total instances {commandLineOptions.TotalInstances}");
+            }
 
             var logger = CreateLogger(commandLineOptions);
             logger.Information("{@commandLineOptions}", commandLineOptions);
