@@ -21,6 +21,6 @@ steps:
   
 - task: VSTest@2
   inputs:
-    testAssemblyVer2: '**\NeoToCosmos.Unit.Tests.dll!**\*TestAdapter.dll!**\obj\**'
+    testAssemblyVer2: '**\$(BuildConfiguration)\*\*.Unit.Tests.dll!**\obj\**'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
