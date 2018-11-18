@@ -1,9 +1,9 @@
 # neo-to-cosmos
-[![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
+[![Build Status](https://syedhassaanahmed.visualstudio.com/neo-to-cosmos/_apis/build/status/neo-to-cosmos-CI)](https://syedhassaanahmed.visualstudio.com/neo-to-cosmos/_build/latest?definitionId=7) [![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
 
 [![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
 
-This app takes a Neo4j database snapshot and copies all content to an Azure Cosmos DB Graph database.
+This app takes a Neo4j database snapshot and copies all content to an Azure Cosmos DB Graph database using the [BulkExecutor library](https://github.com/Azure-Samples/azure-cosmosdb-graph-bulkexecutor-dotnet-getting-started).
 
 ## Disclaimer
 - The app is **NOT intended to synchronize a live production database**.
@@ -28,11 +28,11 @@ COSMOSDB_ENDPOINT=https://<COSMOSDB_ACCOUNT>.documents.azure.com:443/
 COSMOSDB_AUTHKEY=<COSMOSDB_AUTHKEY>
 COSMOSDB_DATABASE=graphdb
 COSMOSDB_COLLECTION=graphcollz
-COSMOSDB_PARTITIONKEY=someProperty # mandatory for unlimited collections
-COSMOSDB_OFFERTHROUGHPUT=1000 # default is 400 for fixed and 1000 for unlimited collections
+COSMOSDB_PARTITIONKEY=someProperty #mandatory for unlimited collections
+COSMOSDB_OFFERTHROUGHPUT=1000 #default is 400 for fixed and 1000 for unlimited collections
 
 NEO4J_BOLT=bolt://<BOLT_ENDPOINT>:7687
-NEO4J_USERNAME=neo4j # default is 'neo4j'
+NEO4J_USERNAME=neo4j #default is 'neo4j'
 NEO4J_PASSWORD=<NEO4J_PASSWORD>
 
 CACHE_PATH=<PATH_TO_CACHE_DIRECTORY> #default is 'cache'
