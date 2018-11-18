@@ -1,6 +1,12 @@
 pool:
   vmImage: 'VS2017-Win2016'
 
+resources:
+  containers:
+  - container: neo4j-game-of-thrones
+    image: syedhassaanahmed/neo4j-game-of-thrones
+    options: -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/Neo4j
+
 variables:
   buildConfiguration: 'Release'
 
@@ -10,6 +16,11 @@ steps:
 
 - script: dotnet test NeoToCosmos.Unit.Tests --logger trx
   displayName: 'Unit Tests'
+
+- task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
+  displayName: 'Start Azure Cosmos DB Emulator'
+
+- script: curl http://localhost:7474
 
 - task: PublishTestResults@2
   inputs:
