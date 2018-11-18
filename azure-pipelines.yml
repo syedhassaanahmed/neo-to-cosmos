@@ -17,9 +17,6 @@ steps:
 - script: dotnet test NeoToCosmos.Unit.Tests --logger trx
   displayName: 'Unit Tests'
 
-- task: azure-cosmosdb.emulator-public-preview.run-cosmosdbemulatorcontainer.CosmosDbEmulator@2
-  displayName: 'Start Azure Cosmos DB Emulator'
-
 - script: curl http://localhost:7474
 
 - task: PublishTestResults@2
