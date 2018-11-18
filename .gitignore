@@ -334,3 +334,6 @@ ASALocalRun/
 .localhistory/
 
 launchSettings.json
+
+logs/
+cache/

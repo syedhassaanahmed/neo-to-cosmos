@@ -26,7 +26,8 @@ namespace NeoToCosmos
 
         public async Task InitializeAsync(bool shouldRestart)
         {
-            var (endpoint, authKey, database, collection, partitionKey, offerThroughput) = GetConfiguration();            
+            var (endpoint, authKey, database, collection, partitionKey, offerThroughput) = GetConfiguration();
+            _logger.Information(endpoint);
 
             _documentClient = new DocumentClient(new Uri(endpoint), authKey, new ConnectionPolicy
             {
