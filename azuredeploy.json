@@ -13,6 +13,7 @@
         },
         "cosmosDbAccountName": {
             "type": "string",
+            "defaultValue": "neo-to-cosmos",
             "metadata": {
                 "description": "Cosmos DB Account name"
             }
@@ -65,7 +66,17 @@
             "metadata": {
                 "description": "Neo4j password"
             }
+        },
+        "pageSize": {
+            "type": "int",
+            "defaultValue": 1000,
+            "metadata": {
+                "description": "Page size used to read Neo4j batches"
+            }
         }
+    },
+    "variables": {
+        "cachePath": "/mnt/cache"
     },
     "resources": [
         {
@@ -79,7 +90,7 @@
             },
             "properties": {
                 "name": "[parameters('cosmosDbAccountName')]",
-                "databaseAccountOfferType": "Standard",                
+                "databaseAccountOfferType": "Standard",
                 "capabilities": [
                     {
                         "name": "EnableGremlin"
@@ -111,11 +122,18 @@
                                     "memoryInGb": 1
                                 }
                             },
+                            "volumeMounts": [
+                                {
+                                    "name": "cache-path",
+                                    "mountPath": "[variables('cachePath')]"
+                                }
+                            ],
                             "command": [
                                 "dotnet",
                                 "NeoToCosmos.dll",
                                 "[concat('-t', parameters('migratorInstances'))]",
-                                "[concat('-i', copyIndex())]"
+                                "[concat('-i', copyIndex())]",
+                                "[concat('-p', parameters('pageSize'))]"
                             ],
                             "environmentVariables": [
                                 {
@@ -124,7 +142,7 @@
                                 },
                                 {
                                     "name": "COSMOSDB_AUTHKEY",
-                                    "Value": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
+                                    "secureValue": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
                                 },
                                 {
                                     "name": "COSMOSDB_DATABASE",
@@ -152,14 +170,24 @@
                                 },
                                 {
                                     "name": "NEO4J_PASSWORD",
-                                    "value": "[parameters('neo4jPassword')]"
+                                    "secureValue": "[parameters('neo4jPassword')]"
+                                },
+                                {
+                                    "name": "CACHE_PATH",
+                                    "value": "[variables('cachePath')]"
                                 }
                             ]
                         }
                     }
                 ],
                 "osType": "Linux",
-                "restartPolicy": "OnFailure"
+                "restartPolicy": "OnFailure",
+                "volumes": [
+                    {
+                        "name": "cache-path",
+                        "emptyDir": {}
+                    }
+                ]
             }
         }
     ]

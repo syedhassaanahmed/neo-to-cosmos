@@ -45,7 +45,7 @@ https://docs.microsoft.com/en-us/azure/cosmos-db/create-graph-dotnet).
 You don't need to create a graph, because the app will do it for you.
 
 ## Configuration
-Before you run the app, you'll need to supply environment variables which contain settings to your Neo4j and Cosmos DB databases, as well as an optional Redis cache to facilitate resume scenario.
+Before you run the app, you'll need to supply environment variables which contain settings to your Neo4j and Cosmos DB databases.
 
 ```
 COSMOSDB_ENDPOINT=https://<COSMOSDB_ACCOUNT>.documents.azure.com:443/
@@ -56,7 +56,7 @@ COSMOSDB_PARTITIONKEY=someProperty # mandatory for unlimited collections
 COSMOSDB_OFFERTHROUGHPUT=1000 # default is 400 for fixed and 1000 for unlimited collections
 
 NEO4J_BOLT=bolt://<BOLT_ENDPOINT>:7687
-NEO4J_USERNAME=<NEO4J_USERNAME> # default is 'neo4j'
+NEO4J_USERNAME=neo4j # default is 'neo4j'
 NEO4J_PASSWORD=<NEO4J_PASSWORD>
 
 CACHE_PATH=<PATH_TO_CACHE_DIRECTORY> #default is 'cache'
