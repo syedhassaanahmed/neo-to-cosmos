@@ -15,13 +15,13 @@ steps:
   displayName: 'Install Docker with LCOW support'
   inputs:
     targetType: filePath
-    filePath: .\devops\neo-to-cosmos.ps1
+    filePath: .\devops\install-docker-lcow.ps1
 
 - task: PowerShell@2
   displayName: 'Run neo-to-cosmos'
   inputs:
     targetType: filePath
-    filePath: .\devops\install-docker-lcow.ps1
+    filePath: .\devops\neo-to-cosmos.ps1
 
 - task: PublishTestResults@2
   inputs:
