@@ -29,6 +29,7 @@ do
     Write-Host "waiting for Docker to start..."
     Start-Sleep 1
 } until ((Get-Service $DOCKER_SERVICES | Where-Object {$_.status -eq "Stopped"}).count -eq 0)
+docker info
 # End
 
 try { docker rm -f $CONTAINER_NAME } catch {}
