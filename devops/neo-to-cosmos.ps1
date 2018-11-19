@@ -31,12 +31,12 @@ function Test-Http ($endpoint) {
 
 do {
     Write-Host "waiting for Neo4j server to start..."
-    Start-Sleep 1
+    Start-Sleep 3
 } until((Test-Http "http://localhost:$NEO4J_HTTP_PORT") -ne 200)
 
 do {
     Write-Host "waiting for Cosmos DB emulator to start..."
-    Start-Sleep 1
+    Start-Sleep 3
 } until((Test-Http "https://localhost:$COSMOSDB_PORT") -ne 401)
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj
