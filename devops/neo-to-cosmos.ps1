@@ -12,7 +12,7 @@ $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:$NEO4J_BOLT_PORT"
 $NEO4J_HTTP_PORT=7474
 
-& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
+#& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
 
 # Begin: Enable Docker experimental support so that we can use LCOW
 $DOCKER_DAEMON_CONFIG="$env:programdata\docker\config\daemon.json"
