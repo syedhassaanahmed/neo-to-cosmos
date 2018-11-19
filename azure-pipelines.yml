@@ -12,10 +12,10 @@ steps:
   displayName: 'Unit Tests'
 
 - task: PowerShell@2
-  displayName: 'Install Docker with LCOW support'
+  displayName: 'Enable LCOW support on Docker'
   inputs:
     targetType: filePath
-    filePath: .\devops\install-docker-lcow.ps1
+    filePath: .\devops\enable-docker-lcow.ps1
 
 - task: PowerShell@2
   displayName: 'Run neo-to-cosmos'
