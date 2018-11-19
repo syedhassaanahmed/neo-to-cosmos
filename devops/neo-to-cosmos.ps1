@@ -15,7 +15,7 @@ $NEO4J_HTTP_PORT=7474
 & 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
 
 # Begin: Enable Docker experimental support so that we can use LCOW
-$DOCKER_DAEMON_CONFIG="$env:userprofile\.docker\daemon.json"
+$DOCKER_DAEMON_CONFIG="$env:programdata\docker\config\daemon.json"
 if (!(Test-Path $DOCKER_DAEMON_CONFIG)) {
     New-Item -ItemType "file" -Path $DOCKER_DAEMON_CONFIG -Value "{}" -Force
 }
