@@ -14,7 +14,8 @@ $NEO4J_HTTP_PORT=7474
 
 try { docker rm -f $CONTAINER_NAME } catch {}
 
-docker run --name $CONTAINER_NAME -d -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
+docker run --platform=linux --name $CONTAINER_NAME -d `
+    -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
     syedhassaanahmed/neo4j-game-of-thrones
