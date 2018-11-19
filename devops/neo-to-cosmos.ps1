@@ -12,6 +12,25 @@ $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:$NEO4J_BOLT_PORT"
 $NEO4J_HTTP_PORT=7474
 
+& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
+
+# Begin: Enable Docker experimental support so that we can use LCOW
+$DOCKER_DAEMON_CONFIG="$env:programdata\docker\config\daemon.json"
+if (!(Test-Path $DOCKER_DAEMON_CONFIG)) {
+    New-Item -ItemType "file" -Path $DOCKER_DAEMON_CONFIG -Value "{}" -Force
+}
+$DOCKER_DAEMON_JSON = Get-Content $DOCKER_DAEMON_CONFIG | Out-String | ConvertFrom-Json
+$DOCKER_DAEMON_JSON | Add-Member -Type NoteProperty -Name 'experimental' -Value $True -Force
+$DOCKER_DAEMON_JSON | ConvertTo-Json | Set-Content $DOCKER_DAEMON_CONFIG
+$DOCKER_SERVICES="*docker*"
+Restart-Service $DOCKER_SERVICES
+do
+{
+    Write-Host "waiting for Docker to start..."
+    Start-Sleep 1
+} until ((Get-Service $DOCKER_SERVICES | Where-Object {$_.status -eq "Stopped"}).count -eq 0)
+# End
+
 try { docker rm -f $CONTAINER_NAME } catch {}
 
 docker run --platform=linux --name $CONTAINER_NAME -d `
@@ -19,8 +38,6 @@ docker run --platform=linux --name $CONTAINER_NAME -d `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
     syedhassaanahmed/neo4j-game-of-thrones
-
-& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
 
 function Test-Http ($endpoint) {
     $response = try { (Invoke-WebRequest -Uri $endpoint -ErrorAction Stop).BaseResponse } 
@@ -31,12 +48,12 @@ function Test-Http ($endpoint) {
 
 do {
     Write-Host "waiting for Neo4j server to start..."
-    Start-Sleep 3
+    Start-Sleep 1
 } until((Test-Http "http://localhost:$NEO4J_HTTP_PORT") -ne 200)
 
 do {
     Write-Host "waiting for Cosmos DB emulator to start..."
-    Start-Sleep 3
+    Start-Sleep 1
 } until((Test-Http "https://localhost:$COSMOSDB_PORT") -ne 401)
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj
