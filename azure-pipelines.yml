@@ -11,18 +11,6 @@ steps:
 - script: dotnet test NeoToCosmos.Unit.Tests --logger trx
   displayName: 'Unit Tests'
 
-- task: Docker@1
-  displayName: 'Run Neo4j'
-  inputs:
-    command: 'run'
-    containerName: neo4j-got
-    imageName: syedhassaanahmed/neo4j-game-of-thrones
-    ports: |
-        7474:7474
-        7687:7687
-    envVars: |
-        NEO4J_AUTH=neo4j/Neo4j
-
 - task: PowerShell@2
   inputs:
     targetType: filePath
