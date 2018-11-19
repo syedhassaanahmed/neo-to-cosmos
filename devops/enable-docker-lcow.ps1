@@ -1,6 +1,3 @@
-Get-ChildItem $env:ProgramFiles\Docker\
-exit 0
-
 $DOCKER_SERVICES="*docker*"
 Stop-Service $DOCKER_SERVICES
 
@@ -9,8 +6,7 @@ Invoke-WebRequest -UseBasicParsing -OutFile dockerd.exe https://master.dockerpro
 Invoke-WebRequest -UseBasicParsing -OutFile docker.exe https://master.dockerproject.org/windows/x86_64/docker.exe
 Invoke-WebRequest -UseBasicParsing -OutFile release.zip https://github.com/linuxkit/lcow/releases/download/v4.14.35-v0.3.9/release.zip
 
-Move-Item -Path .\dockerd.exe -Destination "$env:ProgramFiles\Docker\Docker\resources" -Force
-Move-Item -Path .\docker.exe -Destination "$env:ProgramFiles\Docker\Docker\resources\bin" -Force
+Move-Item -Path .\docke*.exe -Destination "$env:ProgramFiles\Docker" -Force
 Expand-Archive release.zip -DestinationPath "$Env:ProgramFiles\Linux Containers\." -Force
 
 $DOCKER_DAEMON_CONFIG="$env:programdata\docker\config\daemon.json"
