@@ -25,12 +25,11 @@ docker run --platform=linux --name $NEO4J_CONTAINER -d `
 $COSMOSDB_EMULATOR="cosmosdb-emulator.msi"
 Invoke-WebRequest -UseBasicParsing -OutFile $COSMOSDB_EMULATOR https://aka.ms/cosmosdb-emulator
 Start-Process msiexec.exe -Wait -ArgumentList '/I .\$COSMOSDB_EMULATOR /quiet'
-& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
+Remove-Item ".\$COSMOSDB_EMULATOR"
+& '$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
 
-do {
-    Write-Host "waiting for Neo4j server to start..."
-    Start-Sleep 1
-} until((docker logs $NEO4J_CONTAINER | Select-String -Pattern "http://localhost:$NEO4J_HTTP_PORT").count -eq 1)
 docker logs $NEO4J_CONTAINER
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
+Remove-Item cache -Recurse -Force
+Remove-Item logs -Recurse -Force
