@@ -1,4 +1,4 @@
-$LOCAL_IP=@(Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "*nat*" -and $_.AddressFamily -eq "IPv4"})[0].IPAddress
+$LOCAL_IP="10.1.0.4"#@(Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "*nat*" -and $_.AddressFamily -eq "IPv4"})[0].IPAddress
 Write-Host $LOCAL_IP
 
 $COSMOSDB_PORT=8081
