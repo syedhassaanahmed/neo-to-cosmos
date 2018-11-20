@@ -24,9 +24,8 @@ docker run --platform=linux --name $NEO4J_CONTAINER -d `
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $COSMOSDB_EMULATOR="cosmosdb-emulator.msi"
 Invoke-WebRequest -UseBasicParsing -OutFile $COSMOSDB_EMULATOR https://aka.ms/cosmosdb-emulator
-Start-Process "msiexec.exe" -ArgumentList "/i",".\$COSMOSDB_EMULATOR","/qn" -Wait
+Start-Process "msiexec.exe" -ArgumentList "/i",".\$COSMOSDB_EMULATOR","/qn" -Wait -NoNewWindow
 Remove-Item ".\$COSMOSDB_EMULATOR"
-Get-ChildItem $env:ProgramFiles
 & "$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" /noui
 
 docker logs $NEO4J_CONTAINER
