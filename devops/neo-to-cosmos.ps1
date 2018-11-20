@@ -1,5 +1,5 @@
 $COSMOSDB_PORT=8081
-$env:COSMOSDB_ENDPOINT = "https://localhost:$COSMOSDB_PORT"
+$env:COSMOSDB_ENDPOINT = "https://127.0.0.1:$COSMOSDB_PORT"
 $env:COSMOSDB_AUTHKEY = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
 $env:COSMOSDB_DATABASE = "testdb"
 $env:COSMOSDB_COLLECTION = "testcoll"
@@ -9,7 +9,7 @@ $env:NEO4J_PASSWORD = "Neo4j"
 
 $NEO4J_CONTAINER="neo4j-got"
 $NEO4J_BOLT_PORT=7687
-$env:NEO4J_BOLT = "bolt://localhost:$NEO4J_BOLT_PORT"
+$env:NEO4J_BOLT = "bolt://127.0.0.1:$NEO4J_BOLT_PORT"
 $NEO4J_HTTP_PORT=7474
 
 # Start Neo4j container
@@ -31,6 +31,7 @@ Set-Content -Value '"$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulato
 Start-Process -FilePath $COSMOSDB_CMD
 
 docker logs $NEO4J_CONTAINER
+docker ps -a
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
 Remove-Item cache -Recurse -Force
