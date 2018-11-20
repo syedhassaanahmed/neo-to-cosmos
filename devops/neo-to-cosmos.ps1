@@ -12,21 +12,25 @@ $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:$NEO4J_BOLT_PORT"
 $NEO4J_HTTP_PORT=7474
 
-& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
-
+# Start Neo4j container
 try { docker rm -f $NEO4J_CONTAINER } catch {}
-
 docker run --platform=linux --name $NEO4J_CONTAINER -d `
     -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
     syedhassaanahmed/neo4j-game-of-thrones
 
+# Install Cosmos DB emulator
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$COSMOSDB_EMULATOR="cosmosdb-emulator.msi"
+Invoke-WebRequest -UseBasicParsing -OutFile $COSMOSDB_EMULATOR https://aka.ms/cosmosdb-emulator
+Start-Process msiexec.exe -Wait -ArgumentList '/I .\$COSMOSDB_EMULATOR /quiet'
+& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /noui
+
 do {
     Write-Host "waiting for Neo4j server to start..."
     Start-Sleep 1
 } until((docker logs $NEO4J_CONTAINER | Select-String -Pattern "http://localhost:$NEO4J_HTTP_PORT").count -eq 1)
-
 docker logs $NEO4J_CONTAINER
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
