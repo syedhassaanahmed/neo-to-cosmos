@@ -34,6 +34,7 @@ Set-Content -Value '"$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulato
 Start-Process -FilePath $COSMOSDB_CMD
 
 docker logs $NEO4J_CONTAINER
+ipconfig /all
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
 Remove-Item cache -Recurse -Force
