@@ -20,12 +20,13 @@ docker run --platform=linux --name $NEO4J_CONTAINER -d `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
     syedhassaanahmed/neo4j-game-of-thrones
 
-# Install and run Cosmos DB emulator
+# Download, install and run Cosmos DB emulator
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$COSMOSDB_EMULATOR="cosmosdb-emulator.msi"
-Invoke-WebRequest -UseBasicParsing -OutFile $COSMOSDB_EMULATOR https://aka.ms/cosmosdb-emulator
-Start-Process "msiexec.exe" -ArgumentList "/i",".\$COSMOSDB_EMULATOR","/qn" -Wait -NoNewWindow
-Remove-Item ".\$COSMOSDB_EMULATOR"
+$COSMOSDB_EMULATOR=".\cosmosdb-emulator.msi"
+Invoke-WebRequest -OutFile $COSMOSDB_EMULATOR https://aka.ms/cosmosdb-emulator
+Write-Host (Get-Item $COSMOSDB_EMULATOR).length 
+Start-Process "msiexec.exe" -ArgumentList "/i","$COSMOSDB_EMULATOR","/qn" -Wait -NoNewWindow
+Remove-Item "$COSMOSDB_EMULATOR"
 & "$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" /noui
 
 docker logs $NEO4J_CONTAINER
