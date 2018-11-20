@@ -11,11 +11,11 @@ steps:
 - script: dotnet test NeoToCosmos.Unit.Tests --logger trx
   displayName: 'Unit Tests'
 
-- task: PowerShell@2
-  displayName: 'Enable LCOW support on Docker'
-  inputs:
-    targetType: filePath
-    filePath: .\devops\enable-docker-lcow.ps1
+# - task: PowerShell@2
+#   displayName: 'Enable LCOW support on Docker'
+#   inputs:
+#     targetType: filePath
+#     filePath: .\devops\enable-docker-lcow.ps1
 
 - task: PowerShell@2
   displayName: 'Run neo-to-cosmos'

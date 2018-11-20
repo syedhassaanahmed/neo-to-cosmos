@@ -1,8 +1,7 @@
-$LOCAL_IP=@(Get-NetIPAddress | Where-Object {$_.InterfaceAlias -like "*nat*" -and $_.AddressFamily -eq "IPv4"})[0].IPAddress
-Write-Host $LOCAL_IP
+& $env:ProgramFiles\Docker\DockerCli.exe -SwitchDaemon
 
 $COSMOSDB_PORT=8081
-$env:COSMOSDB_ENDPOINT = "https://${LOCAL_IP}:${COSMOSDB_PORT}"
+$env:COSMOSDB_ENDPOINT = "https://localhost:${COSMOSDB_PORT}"
 $env:COSMOSDB_AUTHKEY = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
 $env:COSMOSDB_DATABASE = "testdb"
 $env:COSMOSDB_COLLECTION = "testcoll"
@@ -12,12 +11,12 @@ $env:NEO4J_PASSWORD = "Neo4j"
 
 $NEO4J_CONTAINER="neo4j-got"
 $NEO4J_BOLT_PORT=7687
-$env:NEO4J_BOLT = "bolt://${LOCAL_IP}:${NEO4J_BOLT_PORT}"
+$env:NEO4J_BOLT = "bolt://localhost:${NEO4J_BOLT_PORT}"
 $NEO4J_HTTP_PORT=7474
 
 # Start Neo4j container
 try { docker rm -f $NEO4J_CONTAINER } catch {}
-docker run --platform=linux --name $NEO4J_CONTAINER -d `
+docker run --name $NEO4J_CONTAINER -d `
     -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
@@ -34,7 +33,6 @@ Set-Content -Value '"$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulato
 Start-Process -FilePath $COSMOSDB_CMD
 
 docker logs $NEO4J_CONTAINER
-docker-machine ip
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
 Remove-Item cache -Recurse -Force
