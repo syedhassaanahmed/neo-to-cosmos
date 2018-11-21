@@ -21,7 +21,7 @@ do
 {
     Write-Host "waiting for Docker to start..."
     Start-Sleep 1
-} until ((Get-Service $DOCKER_SERVICES | Where-Object {$_.status -eq "Running"}).count -eq 1)
+} until ((Get-Service $DOCKER_SERVICES | Where-Object {$_.status -eq "Running"}).count -ge 1)
 docker info
 
 # Start Neo4j container
