@@ -1,5 +1,3 @@
-& $env:ProgramFiles\Docker\DockerCli.exe -SwitchDaemon
-
 $COSMOSDB_PORT=8081
 $env:COSMOSDB_ENDPOINT = "https://localhost:${COSMOSDB_PORT}"
 $env:COSMOSDB_AUTHKEY = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="
