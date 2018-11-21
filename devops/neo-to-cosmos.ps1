@@ -12,8 +12,17 @@ $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:${NEO4J_BOLT_PORT}"
 $NEO4J_HTTP_PORT=7474
 
+# Switch Docker to Linux containers
 choco install docker-for-windows /y
 & "$env:ProgramFiles\docker\docker\dockercli" -SwitchDaemon
+$DOCKER_SERVICES="*docker*"
+Restart-Service $DOCKER_SERVICES
+do
+{
+    Write-Host "waiting for Docker to start..."
+    Start-Sleep 1
+} until ((Get-Service $DOCKER_SERVICES | Where-Object {$_.status -eq "Running"}).count -eq 1)
+docker info
 
 # Start Neo4j container
 try { docker rm -f $NEO4J_CONTAINER } catch {}
