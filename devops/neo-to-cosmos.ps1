@@ -12,6 +12,9 @@ $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:${NEO4J_BOLT_PORT}"
 $NEO4J_HTTP_PORT=7474
 
+choco install docker-for-windows /y
+& "$env:ProgramFiles\docker\docker\dockercli" -SwitchDaemon
+
 # Start Neo4j container
 try { docker rm -f $NEO4J_CONTAINER } catch {}
 docker run --name $NEO4J_CONTAINER -d `

@@ -1,5 +1,5 @@
 # neo-to-cosmos
-[![Build Status](https://dev.azure.com/syedhassaanahmed/neo-to-cosmos/_apis/build/status/neo-to-cosmos-CI)](https://dev.azure.com/syedhassaanahmed/neo-to-cosmos/_build/latest?definitionId=7) [![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
+[![Build Status](https://dev.azure.com/syedhassaanahmed/neo-to-cosmos/_apis/build/status/neo-to-cosmos-CI)](https://dev.azure.com/syedhassaanahmed/neo-to-cosmos/_build/latest?definitionId=7) [![Docker Build Status](https://img.shields.io/docker/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
 
 [![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
 
@@ -9,7 +9,7 @@ This app takes a Neo4j database snapshot and copies all content to an Azure Cosm
 - The app is **NOT intended to synchronize a live production database**.
 - Node or Relationship property names which are [system reserved in Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources#system-vs-user-defined-resources) will be prepended with `prop_`, i.e. `id` will become `prop_id`.
 - Because Cosmos DB stores vertices and edges in the same collection, Neo4j Relationship Ids will be appended with `edge_` in order to avoid conflicts with Node Ids.
-- This project is **NOT officially supported by Microsoft**. It is an independent effort, although we really appreciate if submit PRs to improve it.
+- This project is **NOT officially supported by Microsoft**. It is an independent effort, although we really appreciate if you submit PRs to improve it.
 
 ## Get Started
 The first thing you'll need is a Neo4j database. Docker is the quickest way to get started. If you're looking for Neo4j docker images with pre-populated Graph datasets, we've [got you covered](https://github.com/syedhassaanahmed/neo4j-datasets/blob/master/azuredeploy.json#L8)! e.g. The following will spin up a container of [Game of Thrones dataset](https://github.com/syedhassaanahmed/neo4j-datasets/tree/master/game-of-thrones):
