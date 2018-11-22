@@ -14,25 +14,21 @@ $NEO4J_HTTP_PORT=7474
 
 # Start Neo4j container
 try { docker rm -f $NEO4J_CONTAINER } catch {}
-docker run --name $NEO4J_CONTAINER -d `
+docker run --platform=linux --name $NEO4J_CONTAINER -d `
     -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
     syedhassaanahmed/neo4j-game-of-thrones
 
 # Download, install and run Cosmos DB emulator
+$COSMOSDB_EMULATOR_MSI="c:\cosmosdb-emulator.msi"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$COSMOSDB_EMULATOR=".\cosmosdb-emulator.msi"
-Invoke-WebRequest -OutFile $COSMOSDB_EMULATOR https://aka.ms/cosmosdb-emulator
-Start-Process "msiexec.exe" -ArgumentList "/i", "$COSMOSDB_EMULATOR", "/qn", "/norestart" -Wait -NoNewWindow
-Remove-Item "$COSMOSDB_EMULATOR"
-$COSMOSDB_CMD=".\startCosmosDb.cmd"
-Set-Content -Value '"$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" /NoUI /NoExplorer /NoFirewall' -Path $COSMOSDB_CMD
-Start-Process -FilePath $COSMOSDB_CMD
+Invoke-WebRequest -OutFile $COSMOSDB_EMULATOR_MSI https://aka.ms/cosmosdb-emulator
+cmd /c start /wait msiexec /i "$COSMOSDB_EMULATOR_MSI" /qn /quiet /norestart
+& "$env:ProgramFiles\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe" /NoExplorer /NoUI
 
 docker logs $NEO4J_CONTAINER
 
 dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
 Remove-Item cache -Recurse -Force
 Remove-Item logs -Recurse -Force
-Remove-Item $COSMOSDB_CMD
