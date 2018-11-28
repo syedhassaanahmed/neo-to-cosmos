@@ -29,6 +29,6 @@ cmd /c start /wait msiexec /i "$COSMOSDB_EMULATOR_MSI" /qn /quiet /norestart
 
 docker logs $NEO4J_CONTAINER
 
-dotnet run --project .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
+dotnet run -c Release -p .\NeoToCosmos\NeoToCosmos.csproj --no-launch-profile
 Remove-Item cache -Recurse -Force
 Remove-Item logs -Recurse -Force

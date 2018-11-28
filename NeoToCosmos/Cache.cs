@@ -14,14 +14,7 @@ namespace NeoToCosmos
 
             if (shouldRestart)
             {
-                var di = new DirectoryInfo(cachePath);
-                if (di.Exists)
-                {
-                    foreach (var file in di.GetFiles())
-                    {
-                        file.Delete();
-                    }
-                }
+                HandleRestart(cachePath);
             }
 
             var options = new DbOptions().SetCreateIfMissing(true);
@@ -31,10 +24,12 @@ namespace NeoToCosmos
         private static void HandleRestart(string cachePath)
         {
             var di = new DirectoryInfo(cachePath);
-
-            foreach (var file in di.GetFiles())
+            if (di.Exists)
             {
-                file.Delete();
+                foreach (var file in di.GetFiles())
+                {
+                    file.Delete();
+                }
             }
         }
 
