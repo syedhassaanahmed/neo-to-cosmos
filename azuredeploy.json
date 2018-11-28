@@ -41,7 +41,7 @@
         },
         "cosmosDbOfferThroughput": {
             "type": "int",
-            "defaultValue": 1000,
+            "defaultValue": 400,
             "minValue": 400,
             "maxValue": 1000000,
             "metadata": {

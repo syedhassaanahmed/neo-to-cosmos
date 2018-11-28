@@ -29,7 +29,7 @@ COSMOSDB_AUTHKEY=<COSMOSDB_AUTHKEY>
 COSMOSDB_DATABASE=graphdb
 COSMOSDB_COLLECTION=graphcollz
 COSMOSDB_PARTITIONKEY=someProperty #mandatory for unlimited collections
-COSMOSDB_OFFERTHROUGHPUT=1000 #default is 400 for fixed and 1000 for unlimited collections
+COSMOSDB_OFFERTHROUGHPUT=1000 #default is 400
 
 NEO4J_BOLT=bolt://<BOLT_ENDPOINT>:7687
 NEO4J_USERNAME=neo4j #default is 'neo4j'

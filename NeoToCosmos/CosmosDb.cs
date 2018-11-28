@@ -88,7 +88,7 @@ namespace NeoToCosmos
             var offerThroughputString = Environment.GetEnvironmentVariable("COSMOSDB_OFFERTHROUGHPUT");
             if (!int.TryParse(offerThroughputString, out int offerThroughput))
             {
-                offerThroughput = !string.IsNullOrEmpty(partitionKey) ? 1000 : 400;
+                offerThroughput = 400;
             }
 
             return (endpoint, authKey, database, collection, partitionKey, offerThroughput);
