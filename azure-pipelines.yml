@@ -5,9 +5,11 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-- task: DotNetCoreInstaller@0
+- task: UseDotNet@2
+  displayName: 'Install .NET Core SDK'
   inputs:
-    version: '2.2.x'
+    packageType: sdk
+    version: 2.2.x
 
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'Build'
