@@ -7,6 +7,7 @@ $env:COSMOSDB_OFFERTHROUGHPUT = "10000"
 $env:NEO4J_USERNAME = "neo4j"
 $env:NEO4J_PASSWORD = "Neo4j"
 
+$NEO4J_IMAGE="syedhassaanahmed/neo4j-game-of-thrones"
 $NEO4J_CONTAINER="neo4j-got"
 $NEO4J_BOLT_PORT=7687
 $env:NEO4J_BOLT = "bolt://localhost:${NEO4J_BOLT_PORT}"
@@ -14,11 +15,13 @@ $NEO4J_HTTP_PORT=7474
 
 # Start Neo4j container
 try { docker rm -f $NEO4J_CONTAINER } catch {}
+docker pull --platform=linux $NEO4J_IMAGE
+
 docker run --platform=linux --name $NEO4J_CONTAINER -d `
     -p ${NEO4J_BOLT_PORT}:${NEO4J_BOLT_PORT} `
     -p ${NEO4J_HTTP_PORT}:${NEO4J_HTTP_PORT} `
     -e NEO4J_AUTH=$env:NEO4J_USERNAME/$env:NEO4J_PASSWORD `
-    syedhassaanahmed/neo4j-game-of-thrones
+    $NEO4J_IMAGE
 
 # Download, install and run Cosmos DB emulator
 $COSMOSDB_EMULATOR_MSI="c:\cosmosdb-emulator.msi"
