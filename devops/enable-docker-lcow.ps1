@@ -1,14 +1,6 @@
 $DOCKER_SERVICES="*docker*"
 Stop-Service $DOCKER_SERVICES
 
-if ((Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V -Online).State -ne 'Enabled') {
-    Enable-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V -Online -All -NoRestart
-}
-  
-if ((Get-WindowsOptionalFeature -FeatureName Containers -Online).State -ne 'Enabled') {
-    Enable-WindowsOptionalFeature -FeatureName Containers -Online -All -NoRestart
-}
-
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Invoke-WebRequest -OutFile docker.zip https://master.dockerproject.org/windows/x86_64/docker.zip
 Invoke-WebRequest -OutFile release.zip https://github.com/linuxkit/lcow/releases/download/v4.14.35-v0.3.9/release.zip
