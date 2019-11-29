@@ -1,5 +1,5 @@
 pool:
-  vmImage: 'win1803'
+  vmImage: 'windows-latest'
 
 variables:
   buildConfiguration: 'Release'
@@ -17,17 +17,17 @@ steps:
 - script: dotnet test NeoToCosmos.Unit.Tests --logger trx
   displayName: 'Unit Tests'
 
-# - task: PowerShell@2
-#   displayName: 'Enable LCOW support on Docker'
-#   inputs:
-#     targetType: filePath
-#     filePath: .\devops\enable-docker-lcow.ps1
+- task: PowerShell@2
+  displayName: 'Enable LCOW support on Docker'
+  inputs:
+    targetType: filePath
+    filePath: .\devops\enable-docker-lcow.ps1
 
-# - task: PowerShell@2
-#   displayName: 'Run neo-to-cosmos'
-#   inputs:
-#     targetType: filePath
-#     filePath: .\devops\neo-to-cosmos.ps1
+- task: PowerShell@2
+  displayName: 'Run neo-to-cosmos'
+  inputs:
+    targetType: filePath
+    filePath: .\devops\neo-to-cosmos.ps1
 
 - task: PublishTestResults@2
   inputs:

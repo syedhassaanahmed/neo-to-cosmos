@@ -1,12 +1,12 @@
 $DOCKER_SERVICES="*docker*"
 Stop-Service $DOCKER_SERVICES
 
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-Invoke-WebRequest -OutFile docker.zip https://master.dockerproject.org/windows/x86_64/docker.zip
-Invoke-WebRequest -OutFile release.zip https://github.com/linuxkit/lcow/releases/download/v4.14.35-v0.3.9/release.zip
+# [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+# Invoke-WebRequest -OutFile docker.zip https://master.dockerproject.org/windows/x86_64/docker.zip
+# Invoke-WebRequest -OutFile release.zip https://github.com/linuxkit/lcow/releases/download/v4.14.35-v0.3.9/release.zip
 
-Expand-Archive docker.zip -DestinationPath "$Env:ProgramFiles\Docker\." -Force
-Expand-Archive release.zip -DestinationPath "$Env:ProgramFiles\Linux Containers\." -Force
+# Expand-Archive docker.zip -DestinationPath "$Env:ProgramFiles\Docker\." -Force
+# Expand-Archive release.zip -DestinationPath "$Env:ProgramFiles\Linux Containers\." -Force
 
 $DOCKER_DAEMON_CONFIG="$env:programdata\docker\config\daemon.json"
 if (!(Test-Path $DOCKER_DAEMON_CONFIG)) {
