@@ -1,5 +1,5 @@
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'win1803'
 
 variables:
   buildConfiguration: 'Release'
