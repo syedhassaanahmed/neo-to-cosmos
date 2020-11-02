@@ -1,7 +1,7 @@
 # neo-to-cosmos
 [![Build Status](https://dev.azure.com/syedhassaanahmed/neo-to-cosmos/_apis/build/status/neo-to-cosmos-CI)](https://dev.azure.com/syedhassaanahmed/neo-to-cosmos/_build/latest?definitionId=7) [![Docker Build Status](https://img.shields.io/docker/cloud/build/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/builds/) [![MicroBadger Size](https://img.shields.io/microbadger/image-size/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/tags/) [![Docker Pulls](https://img.shields.io/docker/pulls/syedhassaanahmed/neo-to-cosmos.svg?logo=docker)](https://hub.docker.com/r/syedhassaanahmed/neo-to-cosmos/)
 
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsyedhassaanahmed%2Fneo-to-cosmos%2Fmaster%2Fazuredeploy.json)
 
 This app takes a Neo4j database snapshot and copies all content to an Azure Cosmos DB Graph database using the [BulkExecutor library](https://github.com/Azure-Samples/azure-cosmosdb-graph-bulkexecutor-dotnet-getting-started).
 

@@ -35,7 +35,7 @@
         "cosmosDbPartitionKey": {
             "type": "string",
             "metadata": {
-                "description": "Cosmos DB Container's partition key'"
+                "description": "Cosmos DB Container's partition key"
             }
         },
         "cosmosDbOfferThroughput": {
