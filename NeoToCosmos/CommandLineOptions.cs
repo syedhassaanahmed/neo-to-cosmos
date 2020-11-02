@@ -6,7 +6,7 @@ namespace NeoToCosmos
     public class CommandLineOptions
     {
         [Option('r', "restart", Required = false, Default = false,
-            HelpText = "Restarts data transfer by re-creating Cosmos DB collection and flushing the cache.")]
+            HelpText = "Restarts data transfer by re-creating Cosmos DB Container and flushing the cache.")]
         public bool ShouldRestart { get; set; }
 
         [Option('t', "total", Required = false, Default = 1,

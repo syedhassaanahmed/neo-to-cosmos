@@ -8,7 +8,7 @@ This app takes a Neo4j database snapshot and copies all content to an Azure Cosm
 ## Disclaimer
 - The app is **NOT intended to synchronize a live production database**.
 - Node or Relationship property names which are [system reserved in Cosmos DB](https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-resources#system-vs-user-defined-resources) will be prepended with `prop_`, i.e. `id` will become `prop_id`.
-- Because Cosmos DB stores vertices and edges in the same collection, Neo4j Relationship Ids will be appended with `edge_` in order to avoid conflicts with Node Ids.
+- Because Cosmos DB stores vertices and edges in the same Container, Neo4j Relationship Ids will be appended with `edge_` in order to avoid conflicts with Node Ids.
 - This project is **NOT officially supported by Microsoft**. It is an independent effort, although we really appreciate if you submit PRs to improve it.
 
 ## Get Started
@@ -27,11 +27,11 @@ Before you run the app, you'll need to supply environment variables which contai
 COSMOSDB_ENDPOINT=https://<COSMOSDB_ACCOUNT>.documents.azure.com:443/
 COSMOSDB_AUTHKEY=<COSMOSDB_AUTHKEY>
 COSMOSDB_DATABASE=graphdb
-COSMOSDB_COLLECTION=graphcollz
-COSMOSDB_PARTITIONKEY=someProperty #mandatory for unlimited collections
+COSMOSDB_CONTAINER=graphcont
+COSMOSDB_PARTITIONKEY=someProperty
 COSMOSDB_OFFERTHROUGHPUT=1000 #default is 400
 
-NEO4J_BOLT=bolt://<BOLT_ENDPOINT>:7687
+NEO4J_ENDPOINT=neo4j://<NEO4J_ENDPOINT>:7687
 NEO4J_USERNAME=neo4j #default is 'neo4j'
 NEO4J_PASSWORD=<NEO4J_PASSWORD>
 
@@ -57,7 +57,8 @@ To deploy the template using latest [Azure CLI 2.0](https://docs.microsoft.com/e
 az group deployment create -g <RESOURCE_GROUP> \
     --template-file azuredeploy.json \
     --parameters \
-        neo4jBolt=bolt://<BOLT_ENDPOINT>:7687 \
+        cosmosDbPartitionKey=someProperty \
+        neo4jEndpoint=neo4j://<NEO4J_ENDPOINT>:7687 \
         neo4jPassword=<NEO4J_PASSWORD>
 ```
 

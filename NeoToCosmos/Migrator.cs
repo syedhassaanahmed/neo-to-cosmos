@@ -1,5 +1,5 @@
 ﻿using Microsoft.Azure.CosmosDB.BulkExecutor.Graph.Element;
-using Neo4j.Driver.V1;
+using Neo4j.Driver;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -136,7 +136,7 @@ namespace NeoToCosmos
             var relationship = relationshipData.Relationship;
 
             /* DO NOT use Neo4j's relationship.Id directly as edgeId
-            Cosmos DB stores both vertices and edges in the same collection 
+            Cosmos DB stores both vertices and edges in the same Container 
             and if Neo4j Node and Relationship Ids are the same, documents will be overwritten.*/
 
             var edge = new GremlinEdge

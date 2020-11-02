@@ -1,4 +1,4 @@
-﻿using Neo4j.Driver.V1;
+﻿using Neo4j.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,17 +24,17 @@ namespace NeoToCosmos
         {
             _logger = logger;
 
-            var (boltUrl, username, password) = GetConfiguration();
-            _driver = GraphDatabase.Driver(boltUrl, AuthTokens.Basic(username, password));
-            _logger.Information(boltUrl);
+            var (endpoint, username, password) = GetConfiguration();
+            _driver = GraphDatabase.Driver(endpoint, AuthTokens.Basic(username, password));
+            _logger.Information(endpoint);
         }
 
         private static (string, string, string) GetConfiguration()
         {
-            var boltUrl = Environment.GetEnvironmentVariable("NEO4J_BOLT");
-            if (string.IsNullOrEmpty(boltUrl))
+            var endpoint = Environment.GetEnvironmentVariable("NEO4J_ENDPOINT");
+            if (string.IsNullOrEmpty(endpoint))
             {
-                throw new ArgumentNullException(nameof(boltUrl));
+                throw new ArgumentNullException(nameof(endpoint));
             }
 
             var username = Environment.GetEnvironmentVariable("NEO4J_USERNAME") ?? "neo4j";
@@ -44,7 +44,7 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(password));
             }
 
-            return (boltUrl, username, password);
+            return (endpoint, username, password);
         }
 
         public async Task<long> GetTotalNodesAsync()
@@ -67,16 +67,15 @@ namespace NeoToCosmos
 
         public async Task<IEnumerable<Neo4jRelationship>> GetRelationshipsAsync(long index, int pageSize, string partitionKey)
         {
-            var partitionProperties = !string.IsNullOrEmpty(partitionKey) ? $", a.{partitionKey}, b.{partitionKey}" : "";
-            var records = await RunAsync($"MATCH (a)-[r]->(b) RETURN labels(a)[0], r, labels(b)[0] {partitionProperties} ORDER BY ID(r) SKIP {index} LIMIT {pageSize}");
+            var records = await RunAsync($"MATCH (a)-[r]->(b) RETURN labels(a)[0], r, labels(b)[0], a.{partitionKey}, b.{partitionKey} ORDER BY ID(r) SKIP {index} LIMIT {pageSize}");
 
             return records.Select(r => new Neo4jRelationship
             {
                 Relationship = r["r"].As<IRelationship>(),
                 SourceLabel = r["labels(a)[0]"].As<string>(),
                 SinkLabel = r["labels(b)[0]"].As<string>(),
-                SourcePartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"a.{partitionKey}"] : null,
-                SinkPartitionKey = !string.IsNullOrEmpty(partitionKey) ? r[$"b.{partitionKey}"] : null
+                SourcePartitionKey = r[$"a.{partitionKey}"],
+                SinkPartitionKey = r[$"b.{partitionKey}"]
             });
         }
 
@@ -84,10 +83,15 @@ namespace NeoToCosmos
         {
             _logger.Information(cypherQuery);
 
-            using (var session = _driver.Session())
+            var session = _driver.AsyncSession();
+            try
             {
                 var result = await session.RunAsync(cypherQuery);
                 return await result.ToListAsync();
+            }
+            finally
+            {
+                await session.CloseAsync();
             }
         }
 

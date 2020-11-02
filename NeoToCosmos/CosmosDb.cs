@@ -26,7 +26,7 @@ namespace NeoToCosmos
 
         public async Task InitializeAsync(bool shouldRestart)
         {
-            var (endpoint, authKey, database, collection, partitionKey, offerThroughput) = GetConfiguration();
+            var (endpoint, authKey, database, container, partitionKey, offerThroughput) = GetConfiguration();
             _logger.Information(endpoint);
 
             _documentClient = new DocumentClient(new Uri(endpoint), authKey, new ConnectionPolicy
@@ -37,10 +37,10 @@ namespace NeoToCosmos
 
             if (shouldRestart)
             {
-                await HandleRestartAsync(database, collection);
+                await HandleRestartAsync(database, container);
             }
 
-            var documentCollection = await CreateCollectionIfNotExistsAsync(database, collection, partitionKey, offerThroughput);
+            var documentCollection = await CreateCollectionIfNotExistsAsync(database, container, partitionKey, offerThroughput);
             _logger.Information("{@documentCollection}", documentCollection);
 
             PartitionKey = documentCollection.PartitionKey.Paths.FirstOrDefault()?.Replace("/", string.Empty);
@@ -77,13 +77,17 @@ namespace NeoToCosmos
                 throw new ArgumentNullException(nameof(database));
             }
 
-            var collection = Environment.GetEnvironmentVariable("COSMOSDB_COLLECTION");
-            if (string.IsNullOrEmpty(collection))
+            var container = Environment.GetEnvironmentVariable("COSMOSDB_CONTAINER");
+            if (string.IsNullOrEmpty(container))
             {
-                throw new ArgumentNullException(nameof(collection));
+                throw new ArgumentNullException(nameof(container));
             }
 
             var partitionKey = Environment.GetEnvironmentVariable("COSMOSDB_PARTITIONKEY");
+            if (string.IsNullOrEmpty(partitionKey))
+            {
+                throw new ArgumentNullException(nameof(partitionKey));
+            }
 
             var offerThroughputString = Environment.GetEnvironmentVariable("COSMOSDB_OFFERTHROUGHPUT");
             if (!int.TryParse(offerThroughputString, out int offerThroughput))
@@ -91,16 +95,16 @@ namespace NeoToCosmos
                 offerThroughput = 400;
             }
 
-            return (endpoint, authKey, database, collection, partitionKey, offerThroughput);
+            return (endpoint, authKey, database, container, partitionKey, offerThroughput);
         }
 
-        private async Task HandleRestartAsync(string database, string collection)
+        private async Task HandleRestartAsync(string database, string container)
         {
-            var collectionUri = UriFactory.CreateDocumentCollectionUri(database, collection);
+            var collectionUri = UriFactory.CreateDocumentCollectionUri(database, container);
 
             try
             {
-                await _documentClient.DeleteDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(database, collection));
+                await _documentClient.DeleteDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(database, container));
             }
             catch (DocumentClientException e)
             {
@@ -118,15 +122,14 @@ namespace NeoToCosmos
         {
             await _documentClient.CreateDatabaseIfNotExistsAsync(new Database { Id = database });
 
-            var collectionDefinition = new DocumentCollection { Id = collection };
-
-            if (!string.IsNullOrEmpty(partitionKey))
+            var collectionDefinition = new DocumentCollection
             {
-                collectionDefinition.PartitionKey = new PartitionKeyDefinition
+                Id = collection,
+                PartitionKey = new PartitionKeyDefinition
                 {
                     Paths = new Collection<string> { $"/{partitionKey}" }
-                };
-            }
+                }
+            };
 
             var documentCollection = await _documentClient.CreateDocumentCollectionIfNotExistsAsync(
                 UriFactory.CreateDatabaseUri(database),

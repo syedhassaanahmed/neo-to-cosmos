@@ -9,7 +9,7 @@ steps:
   displayName: 'Install .NET Core SDK'
   inputs:
     packageType: sdk
-    version: 2.2.x
+    version: 3.1.x
 
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'Build'

@@ -25,18 +25,17 @@
                 "description": "Cosmos DB Database name"
             }
         },
-        "cosmosDbCollection": {
+        "cosmosDbContainer": {
             "type": "string",
             "defaultValue": "graphcollz",
             "metadata": {
-                "description": "Cosmos DB Collection name"
+                "description": "Cosmos DB Container name"
             }
         },
         "cosmosDbPartitionKey": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
-                "description": "Cosmos DB collection's partition key'"
+                "description": "Cosmos DB Container's partition key'"
             }
         },
         "cosmosDbOfferThroughput": {
@@ -45,13 +44,13 @@
             "minValue": 400,
             "maxValue": 1000000,
             "metadata": {
-                "description": "Cosmos DB RU throughput in case collection has to be created"
+                "description": "Cosmos DB RU throughput in case Container has to be created"
             }
         },
-        "neo4jBolt": {
+        "neo4jEndpoint": {
             "type": "string",
             "metadata": {
-                "description": "Neo4j bolt url: bolt://<BOLT_ENDPOINT>:7687"
+                "description": "neo4j://<NEO4J_ENDPOINT>:7687"
             }
         },
         "neo4jUsername": {
@@ -149,8 +148,8 @@
                                     "value": "[parameters('cosmosDbDatabase')]"
                                 },
                                 {
-                                    "name": "COSMOSDB_COLLECTION",
-                                    "value": "[parameters('cosmosDbCollection')]"
+                                    "name": "COSMOSDB_CONTAINER",
+                                    "value": "[parameters('cosmosDbContainer')]"
                                 },
                                 {
                                     "name": "COSMOSDB_PARTITIONKEY",
@@ -161,8 +160,8 @@
                                     "value": "[parameters('cosmosDbOfferThroughput')]"
                                 },
                                 {
-                                    "name": "NEO4J_BOLT",
-                                    "value": "[parameters('neo4jBolt')]"
+                                    "name": "NEO4J_ENDPOINT",
+                                    "value": "[parameters('neo4jEndpoint')]"
                                 },
                                 {
                                     "name": "NEO4J_USERNAME",
