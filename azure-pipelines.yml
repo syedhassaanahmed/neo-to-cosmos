@@ -1,35 +1,39 @@
 pool:
-  vmImage: 'windows-latest'
+  vmImage: windows-latest
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: Release
 
 steps:
 - task: UseDotNet@2
-  displayName: 'Install .NET Core SDK'
+  displayName: Install .NET Core SDK
   inputs:
     packageType: sdk
     version: 3.1.x
 
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'Build'
+- task: DotNetCoreCLI@2
+  displayName: dotnet restore
+  inputs:
+    command: restore
+    arguments: --configuration $(buildConfiguration)
 
-- script: dotnet test NeoToCosmos.Unit.Tests --logger trx
-  displayName: 'Unit Tests'
+- task: DotNetCoreCLI@2
+  displayName: dotnet build
+  inputs:
+    command: build
+    arguments: --configuration $(buildConfiguration) --no-restore
 
-# - task: PowerShell@2
-#   displayName: 'Enable LCOW support on Docker'
-#   inputs:
-#     targetType: filePath
-#     filePath: .\devops\enable-docker-lcow.ps1
+- task: DotNetCoreCLI@2
+  displayName: dotnet test
+  inputs:
+    command: test
+    projects: "**/*(NeoToCosmos.Unit.Tests.csproj)"
+    nobuild: true
+    arguments: --configuration $(buildConfiguration)
+    publishTestResults: true
 
 # - task: PowerShell@2
 #   displayName: 'Run neo-to-cosmos'
 #   inputs:
 #     targetType: filePath
 #     filePath: .\devops\neo-to-cosmos.ps1
-
-- task: PublishTestResults@2
-  inputs:
-    testRunner: VSTest
-    testResultsFiles: '**/*.trx'
