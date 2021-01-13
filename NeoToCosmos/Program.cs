@@ -27,10 +27,8 @@ namespace NeoToCosmos
             var cache = new Cache(commandLineOptions.ShouldRestart);
             var cosmosDb = new CosmosDb(logger);
 
-            using (var migrator = new Migrator(commandLineOptions, logger, neo4j, cache, cosmosDb))
-            {
-                await migrator.MigrateAsync();
-            }   
+            using var migrator = new Migrator(commandLineOptions, logger, neo4j, cache, cosmosDb);
+            await migrator.MigrateAsync();
         }
 
         private static ILogger CreateLogger(CommandLineOptions commandLineOptions)

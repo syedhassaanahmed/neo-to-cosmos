@@ -12,7 +12,7 @@ namespace NeoToCosmos
         public string SourceLabel { get; set; }
         public string SinkLabel { get; set; }
         public object SourcePartitionKey { get; set; }
-        public object SinkPartitionKey { get; set; }        
+        public object SinkPartitionKey { get; set; }
     }
 
     public class Neo4j : IDisposable

@@ -1,5 +1,5 @@
 {
-    "$schema": "http://schema.management.azure.com/schemas/2018-05-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "migratorInstances": {
@@ -81,15 +81,23 @@
         {
             "name": "[parameters('cosmosDbAccountName')]",
             "type": "Microsoft.DocumentDB/databaseAccounts",
-            "apiVersion": "2016-03-31",
+            "apiVersion": "2020-06-01-preview",
             "location": "[resourceGroup().location]",
             "kind": "GlobalDocumentDB",
             "tags": {
-                "defaultExperience": "Graph"
+                "defaultExperience": "Gremlin (graph)"
             },
             "properties": {
                 "name": "[parameters('cosmosDbAccountName')]",
                 "databaseAccountOfferType": "Standard",
+                "createMode": "Default",
+                "locations": [
+                    {
+                        "locationName": "[resourceGroup().location]",
+                        "failoverPriority": 0,
+                        "isZoneRedundant": false
+                    }
+                ],
                 "capabilities": [
                     {
                         "name": "EnableGremlin"
@@ -100,7 +108,7 @@
         {
             "name": "[concat(resourceGroup().name, copyIndex())]",
             "type": "Microsoft.ContainerInstance/containerGroups",
-            "apiVersion": "2018-10-01",
+            "apiVersion": "2019-12-01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName'))]"
@@ -141,7 +149,7 @@
                                 },
                                 {
                                     "name": "COSMOSDB_AUTHKEY",
-                                    "secureValue": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2016-03-31').primaryMasterKey]"
+                                    "secureValue": "[listKeys(resourceId('Microsoft.DocumentDb/databaseAccounts', parameters('cosmosDbAccountName')), '2020-06-01-preview').primaryMasterKey]"
                                 },
                                 {
                                     "name": "COSMOSDB_DATABASE",
